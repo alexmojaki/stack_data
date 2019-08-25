@@ -1,6 +1,7 @@
 import ast
 import inspect
 import json
+from collections import defaultdict
 
 import executing
 from littleutils import only
@@ -202,6 +203,52 @@ class FrameInfo(object):
     def statements_text(self):
         start, end = self.statements_text_range
         return self.source.text[start:end]
+
+    @cached_property
+    def scope(self):
+        if not self.source.tree:
+            return None
+
+        stmt = list(self.executing.statements)[0]
+        while True:
+            # Get the parent first in case the original statement is already
+            # a function definition, e.g. if we're calling a decorator
+            # In that case we still want the surrounding scope, not that function
+            stmt = stmt.parent
+            if isinstance(stmt, (ast.FunctionDef, ast.ClassDef, ast.Module)):
+                return stmt
+
+    @cached_property
+    def variables(self):
+        names = defaultdict(list)
+        for node in ast.walk(self.scope):
+            if isinstance(node, ast.Name):
+                names[node.id].append(node)
+
+        result = []
+        for name, nodes in names.items():
+            sentinel = object()
+            value = self.frame.f_locals.get(name, sentinel)
+            is_local = value != sentinel
+            if not is_local:
+                value = self.frame.f_globals.get(name, sentinel)
+                if value == sentinel:
+                    # builtin or undefined
+                    continue
+
+            # TODO proximity to execution
+
+            result.append(Variable(name, nodes, is_local, value))
+
+        return result
+
+
+class Variable(object):
+    def __init__(self, name, nodes, is_local, value):
+        self.name = name
+        self.nodes = nodes
+        self.is_local = is_local
+        self.value = value
 
 
 def print_stack_data():
