@@ -2,6 +2,7 @@ import ast
 import inspect
 import json
 from collections import defaultdict
+from textwrap import dedent
 
 import executing
 from littleutils import only
@@ -66,14 +67,26 @@ def cached_property(func):
     return property(wrapper)
 
 
-class Context(object):
+class Options(object):
     def __init__(
             self,
-            before,
-            after,
+            before=3,
+            after=1,
+            include_signature=False,
+            max_lines_per_piece=6,
     ):
         self.before = before
         self.after = after
+        self.include_signature = include_signature
+        self.max_lines_per_piece = max_lines_per_piece
+
+
+class _LineGap(object):
+    def __repr__(self):
+        return "LINE_GAP"
+
+
+LINE_GAP = _LineGap()
 
 
 class Line(object):
@@ -84,10 +97,7 @@ class Line(object):
     ):
         self.frame_info = frame_info
         self.lineno = lineno
-
-    @property
-    def text(self):
-        return self.frame_info.source.lines[self.lineno - 1]
+        self.text = frame_info.source.lines[lineno - 1]
 
     @property
     def is_current(self):
@@ -105,11 +115,12 @@ class StatementInfo(object):
 
 
 class FrameInfo(object):
-    def __init__(self, frame, context=None):
+    def __init__(self, frame, options=None):
         self.frame = frame
         self.code = frame.f_code
-        self.context = context or Context(before=3, after=1)
+        self.options = options or Options()
         self._cache = {}
+        self.source = Source.for_frame(self.frame)
 
     @classmethod
     def stack_data(cls, frame):
@@ -123,22 +134,11 @@ class FrameInfo(object):
         return dict(
             filename=code.co_filename,
             lineno=self.lineno,
-            line=self.line.text,
             name=code.co_name,
             qualname=ex.code_qualname(),
             executing_text_range=ex.text_range(),
             executing_text=ex.text(),
-            statements_text_range=self.statements_text_range,
-            statements_text=self.statements_text,
-            lines=[
-                (line.lineno, line.text)
-                for line in self.lines
-            ]
         )
-
-    @property
-    def source(self):
-        return Source.for_frame(self.frame)
 
     @property
     def executing(self):
@@ -149,60 +149,68 @@ class FrameInfo(object):
         return self.frame.f_lineno
 
     @cached_property
-    def line(self):
-        return Line(self, self.lineno)
-
-    @cached_property
-    def statements(self):
-        main = self.executing.statements
-        first = list(main)[0]
-        body = []
-        for name, body in ast.iter_fields(first.parent):
-            if isinstance(body, list) and first in body:
-                break
-        pos = body.index(first)
-        return body[max(0, pos - self.context.before)
-                    :pos + len(main) + self.context.after]
-
-    @cached_property
-    def pieces(self):
-        lineno = self.lineno
-        pieces = self.source.pieces
-        pos = only(
-            i
-            for i, (start, end) in enumerate(pieces)
-            if start <= lineno < end
-        )
-        return pieces[max(0, pos - self.context.before)
-                      :pos + 1 + self.context.after]
-
-    @cached_property
     def lines(self):
-        pieces = self.pieces
-        return [
-            Line(self, i)
-            for i in range(pieces[0][0], pieces[-1][-1])
+        scope = self.scope
+        scope_start = scope.first_token.start[0]
+        scope_end = scope.last_token.end[0] + 1
+        scope_pieces = [
+            (start, end)
+            for (start, end) in self.source.pieces
+            if scope_start <= start and end <= scope_end
         ]
 
-    @cached_property
-    def statements_text_range(self):
-        # TODO
-        # source not available
-        # compound statements
+        pos, main_piece = only(
+            (i, (start, end))
+            for (i, (start, end)) in enumerate(scope_pieces)
+            if start <= self.lineno < end
+        )
 
-        tok = self.source.asttokens()
-        ranges = [
-            tok.get_text_range(stmt)
-            for stmt in self.executing.statements
+        pieces_start = max(0, pos - self.options.before)
+        pieces_end = pos + 1 + self.options.after
+        pieces = scope_pieces[pieces_start:pieces_end]
+        result = []
+
+        def lines_from_piece(pc):
+            lines = [
+                Line(self, i)
+                for i in range(pc[0], pc[1])
+            ]
+            if pc != main_piece:
+                lines = truncate(
+                    lines,
+                    max_length=self.options.max_lines_per_piece,
+                    middle=[LINE_GAP],
+                )
+            result.extend(lines)
+
+        if (
+                self.options.include_signature
+                and isinstance(scope, ast.FunctionDef)
+                and pieces_start > 0
+        ):
+            lines_from_piece(scope_pieces[0])
+            if pieces_start > 1:
+                result.append(LINE_GAP)
+
+        for piece in pieces:
+            lines_from_piece(piece)
+
+        real_lines = [
+            line
+            for line in result
+            if isinstance(line, Line)
         ]
-        start = min(r[0] for r in ranges)
-        end = max(r[1] for r in ranges)
-        return start, end
 
-    @property
-    def statements_text(self):
-        start, end = self.statements_text_range
-        return self.source.text[start:end]
+        text = "\n".join(
+            line.text
+            for line in real_lines
+        )
+        dedented_lines = dedent(text).splitlines()
+
+        for line, dedented in zip(real_lines, dedented_lines):
+            line.text = dedented
+
+        return result
 
     @cached_property
     def scope(self):
@@ -242,6 +250,14 @@ class FrameInfo(object):
 
         return result
 
+    def formatted_lines(self):
+        for line in self.lines:
+            if isinstance(line, Line):
+                yield '{:4} | {}'.format(line.lineno, line.text)
+            else:
+                assert line is LINE_GAP
+                yield '(...)'
+
 
 class Variable(object):
     def __init__(self, name, nodes, is_local, value):
@@ -254,3 +270,17 @@ class Variable(object):
 def print_stack_data():
     for frame_info in FrameInfo.stack_data(inspect.currentframe().f_back):
         print(json.dumps(frame_info.to_dict(), indent=4, sort_keys=True))
+
+
+def print_lines():
+    frame_info = FrameInfo(inspect.currentframe().f_back, Options(include_signature=True))
+    for line in frame_info.formatted_lines():
+        print(line)
+
+
+def truncate(seq, max_length, middle):
+    if len(seq) > max_length:
+        left = (max_length - len(middle)) // 2
+        right = max_length - len(middle) - left
+        seq = seq[:left] + middle + seq[-right:]
+    return seq
