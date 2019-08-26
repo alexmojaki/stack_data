@@ -1,6 +1,6 @@
-from stack_data import Source, print_lines
+from stack_data.stack_data import Source, print_lines
 
-filename = '/Users/alexhall/Desktop/python/stack_data/stack_data.py'
+filename = '/Users/alexhall/Desktop/python/stack_data/stack_data/stack_data.py'
 source = Source.for_filename(filename)
 for start, end in source.pieces:
     for i in range(start, end):
