@@ -1,7 +1,7 @@
 import inspect
 import token as token_module
 
-from stack_data.stack_data import FrameInfo, Options, Line, LINE_GAP
+from stack_data.stack_data import FrameInfo, Options, Line, LINE_GAP, markers_from_ranges
 
 
 class Colors:
@@ -14,19 +14,19 @@ class Colors:
 
 
 def formatted_lines(frame_info):
+    def convert_variable_range(_start, _end, _var):
+        return Colors.cyan, Colors.reset
+
+    def convert_token_range(_start, _end, token):
+        if token.type == token_module.OP:
+            return Colors.green, Colors.reset
+
     for line in frame_info.lines:
         if isinstance(line, Line):
-            markers = []
-
-            for start, end, _ in line.variable_ranges:
-                markers.append((start, True, Colors.cyan))
-                markers.append((end, False, Colors.reset))
-
-            for start, end, token in line.token_ranges:
-                if token.type == token_module.OP:
-                    markers.append((start, True, Colors.green))
-                    markers.append((end, False, Colors.reset))
-
+            markers = (
+                    markers_from_ranges(line.variable_ranges, convert_variable_range) +
+                    markers_from_ranges(line.token_ranges, convert_token_range)
+            )
             yield '{:4} | {}'.format(line.lineno, line.render_with_markers(markers))
         else:
             assert line is LINE_GAP

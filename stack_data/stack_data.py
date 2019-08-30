@@ -156,6 +156,21 @@ class Line(object):
 Range = namedtuple('Range', 'start end data')
 
 
+def markers_from_ranges(ranges, converter):
+    markers = []
+    for rang in ranges:
+        converted = converter(*rang)
+        if converted is None:
+            continue
+
+        markers += [
+            (rang[0], True, converted[0]),
+            (rang[1], False, converted[1]),
+        ]
+
+    return markers
+
+
 class FrameInfo(object):
     def __init__(self, frame, options=None):
         self.frame = frame
