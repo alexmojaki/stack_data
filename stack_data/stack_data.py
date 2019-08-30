@@ -46,7 +46,7 @@ class Source(executing.Source):
         start = stmt.first_token.start[0]
 
         for name, body in ast.iter_fields(stmt):
-            if isinstance(body, list) and body and isinstance(body[0], ast.stmt):
+            if isinstance(body, list) and body and isinstance(body[0], (ast.stmt, ast.ExceptHandler)):
                 for sub_stmt in body:
                     for inner_start, inner_end in self._raw_split_into_pieces(sub_stmt):
                         yield start, inner_start
