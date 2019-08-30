@@ -156,16 +156,6 @@ class Line(object):
 Range = namedtuple('Range', 'start end data')
 
 
-class StatementInfo(object):
-    def __init__(
-            self,
-            frame_info,
-            node,
-    ):
-        self.frame_info = frame_info
-        self.node = node
-
-
 class FrameInfo(object):
     def __init__(self, frame, options=None):
         self.frame = frame
