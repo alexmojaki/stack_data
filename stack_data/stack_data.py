@@ -282,7 +282,7 @@ class FrameInfo(object):
         for name, nodes in names.items():
             sentinel = object()
             value = self.frame.f_locals.get(name, sentinel)
-            is_local = value != sentinel
+            is_local = value is not sentinel
             if not is_local:
                 value = self.frame.f_globals.get(name, sentinel)
                 if value == sentinel:
