@@ -132,6 +132,10 @@ class Line(object):
             for variable, node in self.frame_info.variables_by_lineno[self.lineno]
         ]
 
+    @property
+    def dedented_text(self):
+        return self.text[self.leading_indent:]
+
     def render_with_markers(self, markers, strip_leading_indent=True):
         text = self.text
 
