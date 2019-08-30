@@ -1,4 +1,5 @@
 import ast
+import types
 from collections import defaultdict, namedtuple
 from textwrap import dedent
 
@@ -172,7 +173,15 @@ def markers_from_ranges(ranges, converter):
 
 
 class FrameInfo(object):
-    def __init__(self, frame, options=None):
+    def __init__(self, frame_or_tb, options=None):
+        if isinstance(frame_or_tb, types.FrameType):
+            frame = frame_or_tb
+            self.lineno = frame.f_lineno
+        else:
+            assert isinstance(frame_or_tb, types.TracebackType)
+            frame = frame_or_tb.tb_frame
+            self.lineno = frame_or_tb.tb_lineno
+
         self.frame = frame
         self.code = frame.f_code
         self.options = options or Options()
@@ -188,10 +197,6 @@ class FrameInfo(object):
     @property
     def executing(self):
         return Source.executing(self.frame)
-
-    @property
-    def lineno(self):
-        return self.frame.f_lineno
 
     @cached_property
     def lines(self):
