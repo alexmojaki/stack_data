@@ -1,11 +1,11 @@
-from stack_data.stack_data import Source, print_lines
+from pathlib import Path
 
-filename = '/Users/alexhall/Desktop/python/stack_data/stack_data/stack_data.py'
+from stack_data.stack_data import Source
+from stack_data.test_utils import print_pieces, print_lines
+
+filename = str(Path(__file__).parent / "stack_data/stack_data.py")
 source = Source.for_filename(filename)
-for start, end in source.pieces:
-    for i in range(start, end):
-        print(i, source.lines[i - 1])
-    print('-----')
+print_pieces(source)
 
 
 def bar():

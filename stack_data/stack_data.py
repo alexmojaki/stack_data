@@ -1,11 +1,11 @@
 import ast
-import inspect
-import json
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from textwrap import dedent
 
 import executing
-from littleutils import only
+from littleutils import only, group_by_key_func
+
+from stack_data.utils import truncate
 
 
 class Source(executing.Source):
@@ -14,6 +14,7 @@ class Source(executing.Source):
         if self.tree:
             self.lines = self.text.splitlines()
             self.pieces = list(self._clean_pieces())
+            self.tokens_by_lineno = group_by_key_func(self.asttokens().tokens, lambda tok: tok.start[0])
         else:
             self.lines = []
 
@@ -95,13 +96,64 @@ class Line(object):
             frame_info,
             lineno,
     ):
-        self.frame_info = frame_info
+        self.frame_info: FrameInfo = frame_info
         self.lineno = lineno
         self.text = frame_info.source.lines[lineno - 1]
+        self.leading_indent = None
 
     @property
     def is_current(self):
         return self.lineno == self.frame_info.lineno
+
+    @property
+    def tokens(self):
+        return self.frame_info.source.tokens_by_lineno[self.lineno]
+
+    @property
+    def token_ranges(self):
+        return [
+            Range(
+                token.start[1],
+                token.end[1],
+                token,
+            )
+            for token in self.tokens
+        ]
+
+    @property
+    def variable_ranges(self):
+        return [
+            Range(
+                node.first_token.start[1],
+                node.last_token.end[1],
+                (variable, node),
+            )
+            for variable, node in self.frame_info.variables_by_lineno[self.lineno]
+        ]
+
+    def render_with_markers(self, markers, strip_leading_indent=True):
+        text = self.text
+
+        # This just makes the loop below simpler
+        # Don't use append or += to not mutate the input
+        markers = markers + [(len(text), False, '')]
+
+        markers.sort(key=lambda t: t[:2])
+
+        parts = []
+        if strip_leading_indent:
+            start = self.leading_indent
+        else:
+            start = 0
+
+        for position, _is_start, part in markers:
+            parts.append(text[start:position])
+            parts.append(part)
+            start = position
+        return ''.join(parts)
+
+
+Range = namedtuple('Range', 'start end data')
 
 
 class StatementInfo(object):
@@ -127,18 +179,6 @@ class FrameInfo(object):
         while frame:
             yield cls(frame)
             frame = frame.f_back
-
-    def to_dict(self):
-        code = self.code
-        ex = self.executing
-        return dict(
-            filename=code.co_filename,
-            lineno=self.lineno,
-            name=code.co_name,
-            qualname=ex.code_qualname(),
-            executing_text_range=ex.text_range(),
-            executing_text=ex.text(),
-        )
 
     @property
     def executing(self):
@@ -206,9 +246,9 @@ class FrameInfo(object):
             for line in real_lines
         )
         dedented_lines = dedent(text).splitlines()
-
-        for line, dedented in zip(real_lines, dedented_lines):
-            line.text = dedented
+        leading_indent = len(real_lines[0].text) - len(dedented_lines[0])
+        for line in real_lines:
+            line.leading_indent = leading_indent
 
         return result
 
@@ -250,13 +290,13 @@ class FrameInfo(object):
 
         return result
 
-    def formatted_lines(self):
-        for line in self.lines:
-            if isinstance(line, Line):
-                yield '{:4} | {}'.format(line.lineno, line.text)
-            else:
-                assert line is LINE_GAP
-                yield '(...)'
+    @cached_property
+    def variables_by_lineno(self):
+        result = defaultdict(list)
+        for var in self.variables:
+            for node in var.nodes:
+                result[node.lineno].append((var, node))
+        return result
 
 
 class Variable(object):
@@ -265,22 +305,3 @@ class Variable(object):
         self.nodes = nodes
         self.is_local = is_local
         self.value = value
-
-
-def print_stack_data():
-    for frame_info in FrameInfo.stack_data(inspect.currentframe().f_back):
-        print(json.dumps(frame_info.to_dict(), indent=4, sort_keys=True))
-
-
-def print_lines():
-    frame_info = FrameInfo(inspect.currentframe().f_back, Options(include_signature=True))
-    for line in frame_info.formatted_lines():
-        print(line)
-
-
-def truncate(seq, max_length, middle):
-    if len(seq) > max_length:
-        left = (max_length - len(middle)) // 2
-        right = max_length - len(middle) - left
-        seq = seq[:left] + middle + seq[-right:]
-    return seq
