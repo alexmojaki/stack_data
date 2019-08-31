@@ -204,6 +204,9 @@ class FrameInfo(object):
 
     @cached_property
     def lines(self):
+        if not self.source.tree:
+            return []
+
         scope = self.scope
         scope_start = scope.first_token.start[0]
         scope_end = scope.last_token.end[0] + 1
@@ -282,6 +285,9 @@ class FrameInfo(object):
 
     @cached_property
     def variables(self):
+        if not self.source.tree:
+            return []
+
         names = defaultdict(list)
         for node in ast.walk(self.scope):
             if isinstance(node, ast.Name):
