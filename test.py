@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from stack_data.stack_data import Source
+from stack_data import Source
 from stack_data.test_utils import print_pieces, print_lines
 
-filename = str(Path(__file__).parent / "stack_data/stack_data.py")
+filename = str(Path(__file__).parent / "stack_data/core.py")
 source = Source.for_filename(filename)
 print_pieces(source)
 

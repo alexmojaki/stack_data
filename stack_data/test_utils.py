@@ -1,7 +1,7 @@
 import inspect
 import token as token_module
 
-from stack_data.stack_data import FrameInfo, Options, Line, LINE_GAP, markers_from_ranges
+from . import FrameInfo, Options, Line, LINE_GAP, markers_from_ranges
 
 
 class Colors:
