@@ -300,7 +300,7 @@ class FrameInfo(object):
             is_local = value is not sentinel
             if not is_local:
                 value = self.frame.f_globals.get(name, sentinel)
-                if value == sentinel:
+                if value is sentinel:
                     # builtin or undefined
                     continue
 
