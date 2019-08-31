@@ -14,11 +14,11 @@ class Colors:
 
 
 def formatted_lines(frame_info):
-    def convert_variable_range(_start, _end, _var):
+    def convert_variable_range(_):
         return Colors.cyan, Colors.reset
 
-    def convert_token_range(_start, _end, token):
-        if token.type == token_module.OP:
+    def convert_token_range(r):
+        if r.data.type == token_module.OP:
             return Colors.green, Colors.reset
 
     for line in frame_info.lines:

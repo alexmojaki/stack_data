@@ -164,7 +164,7 @@ Range = namedtuple('Range', 'start end data')
 def markers_from_ranges(ranges, converter):
     markers = []
     for rang in ranges:
-        converted = converter(*rang)
+        converted = converter(rang)
         if converted is None:
             continue
 
