@@ -237,6 +237,7 @@ class FrameInfo(object):
 
         if (
                 self.options.include_signature
+                and not self.code.co_name.startswith('<')
                 and isinstance(self.scope, ast.FunctionDef)
                 and pieces_start > 0
         ):
