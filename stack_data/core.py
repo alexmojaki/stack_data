@@ -6,7 +6,7 @@ from textwrap import dedent
 import executing
 from littleutils import only, group_by_key_func
 
-from stack_data.utils import truncate
+from stack_data.utils import truncate, unique_in_order
 
 
 class Source(executing.Source):
@@ -227,6 +227,9 @@ class FrameInfo(object):
     @cached_property
     def included_pieces(self):
         scope_pieces = self.scope_pieces
+        if not self.scope_pieces:
+            return []
+
         pos = scope_pieces.index(self.executing_piece)
         pieces_start = max(0, pos - self.options.before)
         pieces_end = pos + 1 + self.options.after
@@ -243,9 +246,11 @@ class FrameInfo(object):
 
     @cached_property
     def lines(self):
-        result = []
-
         pieces = self.included_pieces
+        if not pieces:
+            return []
+
+        result = []
         for i, piece in enumerate(pieces):
             if (
                     i == 1
@@ -332,6 +337,24 @@ class FrameInfo(object):
             for node in var.nodes:
                 result[node.lineno].append((var, node))
         return result
+
+    @cached_property
+    def variables_in_lines(self):
+        return unique_in_order(
+            var
+            for line in self.lines
+            if isinstance(line, Line)
+            for var, node in self.variables_by_lineno[line.lineno]
+        )
+
+    @cached_property
+    def variables_in_executing_piece(self):
+        start, end = self.executing_piece
+        return unique_in_order(
+            var
+            for lineno in range(start, end)
+            for var, node in self.variables_by_lineno[lineno]
+        )
 
 
 class Variable(object):
