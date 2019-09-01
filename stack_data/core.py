@@ -311,7 +311,13 @@ class FrameInfo(object):
         names = defaultdict(list)
         for node in ast.walk(self.scope):
             if isinstance(node, ast.Name):
-                names[node.id].append(node)
+                key = node.id
+            elif isinstance(node, ast.arg):
+                key = node.arg
+            else:
+                continue
+
+            names[key].append(node)
 
         result = []
         for name, nodes in names.items():
