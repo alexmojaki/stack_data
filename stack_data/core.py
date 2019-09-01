@@ -203,54 +203,69 @@ class FrameInfo(object):
         return Source.executing(self.frame)
 
     @cached_property
-    def lines(self):
+    def scope_pieces(self):
         if not self.source.tree:
             return []
 
         scope = self.scope
         scope_start = scope.first_token.start[0]
         scope_end = scope.last_token.end[0] + 1
-        scope_pieces = [
+        return [
             (start, end)
             for (start, end) in self.source.pieces
             if scope_start <= start and end <= scope_end
         ]
 
-        pos, main_piece = only(
-            (i, (start, end))
-            for (i, (start, end)) in enumerate(scope_pieces)
+    @cached_property
+    def executing_piece(self):
+        return only(
+            (start, end)
+            for (start, end) in self.scope_pieces
             if start <= self.lineno < end
         )
 
+    @cached_property
+    def included_pieces(self):
+        scope_pieces = self.scope_pieces
+        pos = scope_pieces.index(self.executing_piece)
         pieces_start = max(0, pos - self.options.before)
         pieces_end = pos + 1 + self.options.after
         pieces = scope_pieces[pieces_start:pieces_end]
+
+        if (
+                self.options.include_signature
+                and isinstance(self.scope, ast.FunctionDef)
+                and pieces_start > 0
+        ):
+            pieces.insert(0, scope_pieces[0])
+
+        return pieces
+
+    @cached_property
+    def lines(self):
         result = []
 
-        def lines_from_piece(pc):
+        pieces = self.included_pieces
+        for i, piece in enumerate(pieces):
+            if (
+                    i == 1
+                    and pieces[0] == self.scope_pieces[0]
+                    and pieces[1] != self.scope_pieces[1]
+            ):
+                result.append(LINE_GAP)
+
+            start, end = piece
             lines = [
                 Line(self, i)
-                for i in range(pc[0], pc[1])
+                for i in range(start, end)
             ]
-            if pc != main_piece:
+            if piece != self.executing_piece:
                 lines = truncate(
                     lines,
                     max_length=self.options.max_lines_per_piece,
                     middle=[LINE_GAP],
                 )
             result.extend(lines)
-
-        if (
-                self.options.include_signature
-                and isinstance(scope, ast.FunctionDef)
-                and pieces_start > 0
-        ):
-            lines_from_piece(scope_pieces[0])
-            if pieces_start > 1:
-                result.append(LINE_GAP)
-
-        for piece in pieces:
-            lines_from_piece(piece)
 
         real_lines = [
             line
