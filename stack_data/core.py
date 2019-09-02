@@ -178,6 +178,7 @@ def markers_from_ranges(ranges, converter):
 
 class FrameInfo(object):
     def __init__(self, frame_or_tb, options=None):
+        self.executing = Source.executing(frame_or_tb)
         if isinstance(frame_or_tb, types.FrameType):
             frame = frame_or_tb
             self.lineno = frame.f_lineno
@@ -190,17 +191,13 @@ class FrameInfo(object):
         self.code = frame.f_code
         self.options = options or Options()
         self._cache = {}
-        self.source = Source.for_frame(self.frame)
+        self.source = self.executing.source
 
     @classmethod
     def stack_data(cls, frame):
         while frame:
             yield cls(frame)
             frame = frame.f_back
-
-    @property
-    def executing(self):
-        return Source.executing(self.frame)
 
     @cached_property
     def scope_pieces(self):
