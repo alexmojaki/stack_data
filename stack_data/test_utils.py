@@ -32,6 +32,9 @@ def formatted_lines(frame_info):
             assert line is LINE_GAP
             yield '(...)'
 
+    for var in frame_info.variables:
+        print(var.name, '=', repr(var.value))
+
 
 def print_lines():
     frame_info = FrameInfo(inspect.currentframe().f_back, Options(include_signature=True))

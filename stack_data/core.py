@@ -5,6 +5,7 @@ from textwrap import dedent
 
 import executing
 from littleutils import only, group_by_key_func
+from pure_eval import Evaluator
 
 from stack_data.utils import truncate, unique_in_order
 
@@ -306,31 +307,38 @@ class FrameInfo(object):
         if not self.source.tree:
             return []
 
-        names = defaultdict(list)
-        for node in ast.walk(self.scope):
-            if isinstance(node, ast.Name):
-                key = node.id
-            elif isinstance(node, ast.arg):
-                key = node.arg
-            else:
-                continue
+        evaluator = Evaluator.from_frame(self.frame)
+        get_text = self.source.asttokens().get_text
+        scope = self.scope
+        node_values = evaluator.find_expressions(scope)
 
-            names[key].append(node)
+        if isinstance(scope, ast.FunctionDef):
+            for node in ast.walk(scope.args):
+                if not isinstance(node, ast.arg):
+                    continue
+                name = node.arg
+                try:
+                    value = evaluator.names[name]
+                except KeyError:
+                    pass
+                else:
+                    node_values.append((node, value))
+
+        # TODO use compile(...).co_code instead of ast.dump?
+        # Group equivalent nodes together
+        grouped = group_by_key_func(node_values, lambda nv: ast.dump(ast.parse(get_text(nv[0]))))
 
         result = []
-        for name, nodes in names.items():
-            sentinel = object()
-            value = self.frame.f_locals.get(name, sentinel)
-            is_local = value is not sentinel
-            if not is_local:
-                value = self.frame.f_globals.get(name, sentinel)
-                if value is sentinel:
-                    # builtin or undefined
-                    continue
-
-            # TODO proximity to execution
-
-            result.append(Variable(name, nodes, is_local, value))
+        for group in grouped.values():
+            nodes, values = zip(*group)
+            if not all(value is values[0] for value in values):
+                # Distinct values found for same expression
+                # Probably indicates another thread is messing with things
+                # Since no single correct value exists, ignore this expression
+                continue
+            value = values[0]
+            text = get_text(nodes[0])
+            result.append(Variable(text, nodes, value))
 
         return result
 
@@ -362,8 +370,7 @@ class FrameInfo(object):
 
 
 class Variable(object):
-    def __init__(self, name, nodes, is_local, value):
+    def __init__(self, name, nodes, value):
         self.name = name
         self.nodes = nodes
-        self.is_local = is_local
         self.value = value
