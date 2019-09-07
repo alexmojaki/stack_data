@@ -22,6 +22,11 @@ def bar():
         lst.insert(0, x)
 
         lst.append(x)
+        lst.append(
+            [
+                9,
+                99
+            ][0])
         print_lines()
         return lst
 

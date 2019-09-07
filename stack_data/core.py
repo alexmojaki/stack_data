@@ -7,7 +7,7 @@ import executing
 from littleutils import only, group_by_key_func
 from pure_eval import Evaluator
 
-from stack_data.utils import truncate, unique_in_order
+from stack_data.utils import truncate, unique_in_order, line_range
 
 
 class Source(executing.Source):
@@ -45,7 +45,7 @@ class Source(executing.Source):
 
     def _raw_split_into_pieces(self, stmt):
         self.asttokens()
-        start = stmt.first_token.start[0]
+        start, end = line_range(stmt)
 
         for name, body in ast.iter_fields(stmt):
             if isinstance(body, list) and body and isinstance(body[0], (ast.stmt, ast.ExceptHandler)):
@@ -54,7 +54,7 @@ class Source(executing.Source):
                         yield start, inner_start
                         yield inner_start, inner_end
                         start = inner_end
-        end = stmt.last_token.end[0] + 1
+
         yield start, end
 
 
@@ -124,14 +124,28 @@ class Line(object):
 
     @property
     def variable_ranges(self):
-        return [
-            Range(
-                node.first_token.start[1],
-                node.last_token.end[1],
+        result = []
+        for variable, node in self.frame_info.variables_by_lineno[self.lineno]:
+            start, end = line_range(node)
+            end -= 1
+            assert start <= self.lineno <= end
+            if start == self.lineno:
+                range_start = node.first_token.start[1]
+            else:
+                range_start = 0
+
+            if end == self.lineno:
+                range_end = node.last_token.end[1]
+            else:
+                range_end = len(self.text)
+
+            result.append(Range(
+                range_start,
+                range_end,
                 (variable, node),
-            )
-            for variable, node in self.frame_info.variables_by_lineno[self.lineno]
-        ]
+            ))
+
+        return result
 
     @property
     def dedented_text(self):
@@ -151,11 +165,14 @@ class Line(object):
             start = self.leading_indent
         else:
             start = 0
+        original_start = start
 
         for position, _is_start, part in markers:
             parts.append(text[start:position])
             parts.append(part)
-            start = position
+
+            # Ensure that start >= leading_indent
+            start = max(position, original_start)
         return ''.join(parts)
 
 
@@ -205,9 +222,7 @@ class FrameInfo(object):
         if not self.source.tree:
             return []
 
-        scope = self.scope
-        scope_start = scope.first_token.start[0]
-        scope_end = scope.last_token.end[0] + 1
+        scope_start, scope_end = line_range(self.scope)
         return [
             (start, end)
             for (start, end) in self.source.pieces
@@ -351,7 +366,8 @@ class FrameInfo(object):
         result = defaultdict(list)
         for var in self.variables:
             for node in var.nodes:
-                result[node.lineno].append((var, node))
+                for lineno in range(*line_range(node)):
+                    result[lineno].append((var, node))
         return result
 
     @cached_property

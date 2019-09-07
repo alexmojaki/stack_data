@@ -11,3 +11,10 @@ def truncate(seq, max_length, middle):
 
 def unique_in_order(it):
     return list(OrderedDict.fromkeys(it))
+
+
+def line_range(node):
+    return (
+        node.first_token.start[0],
+        node.last_token.end[0] + 1,
+    )
