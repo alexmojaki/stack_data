@@ -326,7 +326,11 @@ class FrameInfo(object):
 
         # TODO use compile(...).co_code instead of ast.dump?
         # Group equivalent nodes together
-        grouped = group_by_key_func(node_values, lambda nv: ast.dump(ast.parse(get_text(nv[0]))))
+        grouped = group_by_key_func(
+            node_values,
+            # Add parens to avoid syntax errors for multiline expressions
+            lambda nv: ast.dump(ast.parse('(' + get_text(nv[0]) + ')')),
+        )
 
         result = []
         for group in grouped.values():
