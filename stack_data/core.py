@@ -1,4 +1,6 @@
 import ast
+import os
+import sys
 import types
 from collections import defaultdict, namedtuple
 from textwrap import dedent
@@ -212,10 +214,14 @@ class FrameInfo(object):
         self.source = self.executing.source
 
     @classmethod
-    def stack_data(cls, frame):
-        while frame:
-            yield cls(frame)
-            frame = frame.f_back
+    def stack_data(cls, frame_or_tb):
+        while frame_or_tb:
+            yield cls(frame_or_tb)
+            if isinstance(frame_or_tb, types.FrameType):
+                frame_or_tb = frame_or_tb.f_back
+            else:
+                assert isinstance(frame_or_tb, types.TracebackType)
+                frame_or_tb = frame_or_tb.tb_next
 
     @cached_property
     def scope_pieces(self):
@@ -228,6 +234,33 @@ class FrameInfo(object):
             for (start, end) in self.source.pieces
             if scope_start <= start and end <= scope_end
         ]
+
+    @cached_property
+    def filename(self):
+        result = self.code.co_filename
+
+        if (
+                os.path.isabs(result) or
+                (
+                        result.startswith(str("<")) and
+                        result.endswith(str(">"))
+                )
+        ):
+            return result
+
+        # Try to make the filename absolute by trying all
+        # sys.path entries (which is also what linecache does)
+        for dirname in sys.path:
+            try:
+                fullname = os.path.join(dirname, result)
+                if os.path.isfile(fullname):
+                    return os.path.abspath(fullname)
+            except Exception:
+                # Just in case that sys.path contains very
+                # strange entries...
+                pass
+
+        return result
 
     @cached_property
     def executing_piece(self):
