@@ -177,6 +177,9 @@ class Line(object):
             start = max(position, original_start)
         return ''.join(parts)
 
+    def __repr__(self):
+        return f"<{self.__class__.__qualname__} {self.lineno} {repr(self.text)} current={self.is_current} of at 0x{id(self):x}>"
+
 
 Range = namedtuple('Range', 'start end data')
 
@@ -196,7 +199,7 @@ def markers_from_ranges(ranges, converter):
     return markers
 
 
-class FrameInfo(object):
+class FrameInfo:
     def __init__(self, frame_or_tb, options=None):
         self.executing = Source.executing(frame_or_tb)
         if isinstance(frame_or_tb, types.FrameType):
@@ -421,6 +424,8 @@ class FrameInfo(object):
             for var, node in self.variables_by_lineno[lineno]
         )
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} of file {repr(self.filename)} at 0x{id(self)}>"
 
 class Variable(object):
     def __init__(self, name, nodes, value):
