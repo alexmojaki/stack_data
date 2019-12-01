@@ -1,6 +1,8 @@
 import ast
 import os
 import sys
+import types
+from typing import List
 from collections import defaultdict, namedtuple, Counter
 from textwrap import dedent
 
@@ -9,6 +11,10 @@ from littleutils import only, group_by_key_func
 from pure_eval import Evaluator
 
 from stack_data.utils import truncate, unique_in_order, line_range, frame_and_lineno, iter_stack, collapse_repeated
+
+
+Range = namedtuple('Range', 'start end data')
+Marker = namedtuple('Marker', 'position is_start part')
 
 
 class Source(executing.Source):
@@ -93,7 +99,25 @@ class _LineGap(object):
 LINE_GAP = _LineGap()
 
 
-class Line(object):
+class Line:
+    """
+    Line object contain information about a single code line in stack frame.
+    It contains the following information:
+
+    - frame_info: link to current frame informations
+    - line_no: current line number in the current frame
+    - text: Text of the current line.
+    - leading_indent: int/None number of indentation spaces.
+
+    It has the following properties:
+
+    - is_current: bool, whether the current line is in the execution stack
+    (True), or part of the context that need to be shown (False).
+    - tokens: ?
+    - token_ranges:?
+    - variable_ranges: ?
+
+    """
     def __init__(
             self,
             frame_info,
@@ -156,7 +180,12 @@ class Line(object):
     def dedented_text(self):
         return self.text[self.leading_indent:]
 
-    def render_with_markers(self, markers, strip_leading_indent=True):
+    def render_with_markers(self, markers:List[Marker], strip_leading_indent=True)->str:
+        """
+
+        Render current text with markers (presumably ansi code) interleaved at
+        the right positions to color the text in terminals.
+        """
         text = self.text
 
         # This just makes the loop below simpler
@@ -181,10 +210,8 @@ class Line(object):
         return ''.join(parts)
 
 
-Range = namedtuple('Range', 'start end data')
 
-
-def markers_from_ranges(ranges, converter):
+def markers_from_ranges(ranges:List[Range], converter)->List[Marker]:
     markers = []
     for rang in ranges:
         converted = converter(rang)
@@ -192,8 +219,8 @@ def markers_from_ranges(ranges, converter):
             continue
 
         markers += [
-            (rang[0], True, converted[0]),
-            (rang[1], False, converted[1]),
+            Marker(rang[0], True, converted[0]),
+            Marker(rang[1], False, converted[1]),
         ]
 
     return markers
