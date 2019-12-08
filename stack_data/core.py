@@ -104,6 +104,10 @@ class Line(object):
         self.text = frame_info.source.lines[lineno - 1]
         self.leading_indent = None
 
+    def __repr__(self):
+        return "<{self.__class__.__name__} {self.lineno} (current={self.is_current}) " \
+               "{self.text!r} of {self.frame_info.filename}>".format(self=self)
+
     @property
     def is_current(self):
         return self.lineno == self.frame_info.lineno
