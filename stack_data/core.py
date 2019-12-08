@@ -206,14 +206,14 @@ class RepeatedFrames:
 
     @property
     def description(self):
-        counts = Counter(self.frame_keys)
+        counts = Counter(self.frame_keys).most_common()
         return ', '.join(
-            '{name}:{lineno} x{count}'.format(
+            '{name} at line {lineno} ({count} times)'.format(
                 name=Source.for_filename(code.co_filename).code_qualname(code),
                 lineno=lineno,
                 count=count,
             )
-            for (code, lineno), count in counts.most_common()
+            for (code, lineno), count in counts
         )
 
     def __repr__(self):

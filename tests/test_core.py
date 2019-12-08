@@ -81,7 +81,7 @@ test_skipping_frames.<locals>.factorial:{factorial}
 test_skipping_frames.<locals>.foo:{foo}
 test_skipping_frames.<locals>.factorial:{factorial}
 test_skipping_frames.<locals>.foo:{foo}
-[... test_skipping_frames.<locals>.factorial:{factorial} x16, test_skipping_frames.<locals>.foo:{foo} x16]
+[... test_skipping_frames.<locals>.factorial at line 56 (16 times), test_skipping_frames.<locals>.foo at line 59 (16 times)]
 test_skipping_frames.<locals>.factorial:{factorial}
 test_skipping_frames.<locals>.foo:{foo}
 test_skipping_frames.<locals>.factorial:{exception}
