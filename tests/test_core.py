@@ -52,7 +52,7 @@ def test_lines_with_gaps():
 def test_skipping_frames():
     def factorial(n):
         if n <= 1:
-            return 1 / 0  # oops, a bug!
+            return 1 / 0  # exception lineno
         return n * foo(n - 1)  # factorial lineno
 
     def foo(n):
@@ -63,26 +63,31 @@ def test_skipping_frames():
     except Exception as e:
         # tb = sys.exc_info()[2]
         tb = e.__traceback__
-        result = ""
+        result = []
         for x in FrameInfo.stack_data(tb):
             if isinstance(x, FrameInfo):
-                result += '{}:{}'.format(x.executing.code_qualname(), x.lineno) + "\n"
+                result.append((x.code, x.lineno))
             else:
-                result += '[... {}]'.format(x.description) + "\n"
+                result.append(x.description)
         source = Source.for_filename(__file__)
         linenos = {}
         for lineno, line in enumerate(source.lines):
             match = re.search(r" # (\w+) lineno", line)
             if match:
                 linenos[match.group(1)] = lineno + 1
-        assert result == """\
-test_skipping_frames:{test_skipping_frames}
-test_skipping_frames.<locals>.factorial:{factorial}
-test_skipping_frames.<locals>.foo:{foo}
-test_skipping_frames.<locals>.factorial:{factorial}
-test_skipping_frames.<locals>.foo:{foo}
-[... test_skipping_frames.<locals>.factorial at line 56 (16 times), test_skipping_frames.<locals>.foo at line 59 (16 times)]
-test_skipping_frames.<locals>.factorial:{factorial}
-test_skipping_frames.<locals>.foo:{foo}
-test_skipping_frames.<locals>.factorial:{exception}
-""".format(exception=linenos["factorial"] - 1, **linenos)
+
+        def simple_frame(func):
+            return func.__code__, linenos[func.__name__]
+
+        assert result == [
+            simple_frame(test_skipping_frames),
+            simple_frame(factorial),
+            simple_frame(foo),
+            simple_frame(factorial),
+            simple_frame(foo),
+            ("test_skipping_frames.<locals>.factorial at line 56 (16 times), " +
+             "test_skipping_frames.<locals>.foo at line 59 (16 times)"),
+            simple_frame(factorial),
+            simple_frame(foo),
+            (factorial.__code__, linenos["exception"]),
+        ]
