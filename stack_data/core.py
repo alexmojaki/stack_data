@@ -1,15 +1,14 @@
 import ast
 import os
 import sys
-import types
-from collections import defaultdict, namedtuple
+from collections import defaultdict, namedtuple, Counter
 from textwrap import dedent
 
 import executing
 from littleutils import only, group_by_key_func
 from pure_eval import Evaluator
 
-from stack_data.utils import truncate, unique_in_order, line_range
+from stack_data.utils import truncate, unique_in_order, line_range, frame_and_lineno, iter_stack, collapse_repeated
 
 
 class Source(executing.Source):
@@ -196,32 +195,52 @@ def markers_from_ranges(ranges, converter):
     return markers
 
 
+class RepeatedFrames:
+    def __init__(self, frames, frame_keys):
+        self.frames = frames
+        self.frame_keys = frame_keys
+
+    @property
+    def description(self):
+        counts = Counter(self.frame_keys)
+        return ', '.join(
+            '{name}:{lineno} x{count}'.format(
+                name=Source.for_filename(code.co_filename).code_qualname(code),
+                lineno=lineno,
+                count=count,
+            )
+            for (code, lineno), count in counts.most_common()
+        )
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} {self.description}>'
+
+
 class FrameInfo(object):
     def __init__(self, frame_or_tb, options=None):
         self.executing = Source.executing(frame_or_tb)
-        if isinstance(frame_or_tb, types.FrameType):
-            frame = frame_or_tb
-            self.lineno = frame.f_lineno
-        else:
-            assert isinstance(frame_or_tb, types.TracebackType)
-            frame = frame_or_tb.tb_frame
-            self.lineno = frame_or_tb.tb_lineno
-
+        frame, self.lineno = frame_and_lineno(frame_or_tb)
         self.frame = frame
         self.code = frame.f_code
         self.options = options or Options()
         self._cache = {}
         self.source = self.executing.source
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.frame})"
+
     @classmethod
-    def stack_data(cls, frame_or_tb):
-        while frame_or_tb:
-            yield cls(frame_or_tb)
-            if isinstance(frame_or_tb, types.FrameType):
-                frame_or_tb = frame_or_tb.f_back
-            else:
-                assert isinstance(frame_or_tb, types.TracebackType)
-                frame_or_tb = frame_or_tb.tb_next
+    def stack_data(cls, frame_or_tb, options=None):
+        def _frame_key(x):
+            frame, lineno = frame_and_lineno(x)
+            return frame.f_code, lineno
+
+        yield from collapse_repeated(
+            list(iter_stack(frame_or_tb)),
+            mapper=lambda f: cls(f, options),
+            collapser=RepeatedFrames,
+            key=_frame_key,
+        )
 
     @cached_property
     def scope_pieces(self):
