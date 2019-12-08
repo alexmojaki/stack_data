@@ -1,41 +1,52 @@
+import inspect
 import re
-from pathlib import Path
 
+from stack_data import Options, Line, LINE_GAP
 from stack_data import Source, FrameInfo
-from stack_data.test_utils import print_pieces, print_lines
 
 
-def bar():
+def test_lines_with_gaps():
+    lines = []
+
+    def gather_lines():
+        frame_info = FrameInfo(inspect.currentframe().f_back, Options(include_signature=True))
+        for line in frame_info.lines:
+            if isinstance(line, Line):
+                line = line.text
+            lines.append(line)
+
     def foo():
         x = 1
-        lst = [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6
-        ]
-        lst.insert(0, x)
+        lst = [1]
 
-        lst.append(x)
+        lst.insert(0, x)
         lst.append(
             [
-                9,
-                99
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
             ][0])
-        print_lines()
+        gather_lines()
         return lst
 
     foo()
-
-
-def main():
-    filename = str(Path(__file__).parent / "stack_data/core.py")
-    source = Source.for_filename(filename)
-    print_pieces(source)
-    bar()
-    test_skipping_frames()
+    assert lines == [
+        '    def foo():',
+        LINE_GAP,
+        '        lst = [1]',
+        '        lst.insert(0, x)',
+        '        lst.append(',
+        '            [',
+        LINE_GAP,
+        '                5,',
+        '                6',
+        '            ][0])',
+        '        gather_lines()',
+        '        return lst',
+    ]
 
 
 def test_skipping_frames():
@@ -75,6 +86,3 @@ test_skipping_frames.<locals>.factorial:{factorial}
 test_skipping_frames.<locals>.foo:{foo}
 test_skipping_frames.<locals>.factorial:{exception}
 """.format(exception=linenos["factorial"] - 1, **linenos)
-
-
-main()
