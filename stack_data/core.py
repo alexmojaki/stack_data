@@ -217,7 +217,7 @@ class RepeatedFrames:
         )
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} {self.description}>'
+        return '<{self.__class__.__name__} {self.description}>'.format(self=self)
 
 
 class FrameInfo(object):
@@ -231,7 +231,7 @@ class FrameInfo(object):
         self.source = self.executing.source
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.frame})"
+        return "{self.__class__.__name__}({self.frame})".format(self=self)
 
     @classmethod
     def stack_data(cls, frame_or_tb, options=None):
