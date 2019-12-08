@@ -2,9 +2,14 @@ import math
 
 
 def foo(x=1, y=2):
+    """
+    a docstring
+    """
     z = 0
     for i in range(5):
         z += i * x * math.sin(y)
+        # comment1
+        # comment2
         z += math.copysign(
             -1,
             2,
