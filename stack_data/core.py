@@ -100,24 +100,6 @@ LINE_GAP = _LineGap()
 
 
 class Line:
-    """
-    Line object contain information about a single code line in stack frame.
-    It contains the following information:
-
-    - frame_info: link to current frame informations
-    - line_no: current line number in the current frame
-    - text: Text of the current line.
-    - leading_indent: int/None number of indentation spaces.
-
-    It has the following properties:
-
-    - is_current: bool, whether the current line is in the execution stack
-    (True), or part of the context that need to be shown (False).
-    - tokens: ?
-    - token_ranges:?
-    - variable_ranges: ?
-
-    """
     def __init__(
             self,
             frame_info,
