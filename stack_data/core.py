@@ -211,7 +211,7 @@ class Line:
 
 
 
-def markers_from_ranges(ranges:List[Range], converter)->List[Marker]:
+def markers_from_ranges(ranges: List[Range], converter) -> List[Marker]:
     markers = []
     for rang in ranges:
         converted = converter(rang)
