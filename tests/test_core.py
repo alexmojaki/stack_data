@@ -151,6 +151,8 @@ def test_markers():
     markers = markers_from_ranges(line.token_ranges, convert_token_range)
     assert line.render_with_markers(markers) == \
            '[[line]] = [[only]]([[FrameInfo]]([[inspect]].[[currentframe]](), [[options]]).[[lines]])'
+    assert line.render_with_markers(markers, strip_leading_indent=False) == \
+           '    [[line]] = [[only]]([[FrameInfo]]([[inspect]].[[currentframe]](), [[options]]).[[lines]])'
 
     def convert_variable_range(r):
         return '[[', ' of type {}]]'.format(r.data[0].value.__class__.__name__)
