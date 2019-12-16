@@ -192,6 +192,10 @@ def test_variables():
     tup = body[-1].value.value.elts
     call = tup[0]
     assert frame_info.executing.node == call
+    assert frame_info.code == foo.__code__
+    assert frame_info.filename.endswith(frame_info.code.co_filename)
+    assert frame_info.filename.endswith("test_core.py")
+    assert os.path.isabs(frame_info.filename)
     assert variables == [
         Variable(
             name='arg',
