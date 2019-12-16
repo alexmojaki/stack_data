@@ -1,9 +1,14 @@
+import ast
 import inspect
+import os
 import re
+import sys
+from itertools import islice
 from pathlib import Path
 
 from stack_data import Options, Line, LINE_GAP
 from stack_data import Source, FrameInfo
+from stack_data.utils import line_range
 
 
 def test_lines_with_gaps():
@@ -157,3 +162,64 @@ def test_skipping_frames():
             simple_frame(foo),
             (factorial.__code__, linenos["exception"]),
         ]
+
+
+def sys_modules_sources():
+    for module in sys.modules.values():
+        try:
+            filename = inspect.getsourcefile(module)
+        except TypeError:
+            continue
+
+        if not filename:
+            continue
+
+        filename = os.path.abspath(filename)
+        print(filename)
+        source = Source.for_filename(filename)
+        if not source.tree:
+            continue
+
+        yield source
+
+
+def test_sys_modules():
+    modules = sys_modules_sources()
+    if not os.environ.get('STACK_DATA_SLOW_TESTS'):
+        modules = islice(modules, 0, 3)
+
+    for source in modules:
+        check_pieces(source)
+
+
+def check_pieces(source):
+    pieces = source.pieces
+
+    assert pieces == sorted(pieces)
+
+    stmts = sorted({
+        line_range(node)
+        for node in ast.walk(source.tree)
+        if isinstance(node, ast.stmt)
+        if not isinstance(getattr(node, 'body', None), list)
+    })
+    if not stmts:
+        return
+
+    stmts_iter = iter(stmts)
+    stmt = next(stmts_iter)
+    for piece in pieces:
+        contains_stmt = stmt[0] <= piece[0] < piece[1] <= stmt[1]
+        before_stmt = piece[0] < piece[1] <= stmt[0] < stmt[1]
+        assert contains_stmt ^ before_stmt
+        if contains_stmt:
+            try:
+                stmt = next(stmts_iter)
+            except StopIteration:
+                break
+
+    blank_linenos = set(range(1, len(source.lines) + 1)).difference(
+        *(piece.range for piece in pieces))
+
+    for lineno in blank_linenos:
+        assert not source.lines[lineno - 1].strip(), lineno

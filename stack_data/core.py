@@ -15,14 +15,14 @@ class Source(executing.Source):
     def __init__(self, *args, **kwargs):
         super(Source, self).__init__(*args, **kwargs)
         if self.tree:
-            self.lines = self.text.splitlines()
+            self.lines = self.text.split('\n')
             self.pieces = list(self._clean_pieces())
             self.tokens_by_lineno = group_by_key_func(self.asttokens().tokens, lambda tok: tok.start[0])
         else:
             self.lines = []
 
     def _clean_pieces(self):
-        pieces = self._raw_split_into_pieces(self.tree)
+        pieces = self._raw_split_into_pieces(self.tree, 0, len(self.lines))
         pieces = [
             (start, end)
             for (start, end) in pieces
@@ -34,7 +34,10 @@ class Source(executing.Source):
         )
 
         def is_blank(i):
-            return not self.lines[i - 1].strip()
+            try:
+                return not self.lines[i - 1].strip()
+            except IndexError:
+                return False
 
         for start, end in pieces:
             while is_blank(start):
@@ -44,14 +47,14 @@ class Source(executing.Source):
             if start < end:
                 yield Piece(start, end)
 
-    def _raw_split_into_pieces(self, stmt):
+    def _raw_split_into_pieces(self, stmt, start, end):
         self.asttokens()
-        start, end = line_range(stmt)
 
         for name, body in ast.iter_fields(stmt):
             if isinstance(body, list) and body and isinstance(body[0], (ast.stmt, ast.ExceptHandler)):
-                for sub_stmt in body:
-                    for inner_start, inner_end in self._raw_split_into_pieces(sub_stmt):
+                for rang, group in group_by_key_func(body, line_range).items():
+                    sub_stmt = group[0]
+                    for inner_start, inner_end in self._raw_split_into_pieces(sub_stmt, *rang):
                         yield start, inner_start
                         yield inner_start, inner_end
                         start = inner_end
