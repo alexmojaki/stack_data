@@ -419,11 +419,6 @@ class FrameInfo(object):
         result = []
         for group in grouped.values():
             nodes, values = zip(*group)
-            if not all(value is values[0] for value in values):
-                # Distinct values found for same expression
-                # Probably indicates another thread is messing with things
-                # Since no single correct value exists, ignore this expression
-                continue
             value = values[0]
             text = get_text(nodes[0])
             result.append(Variable(text, nodes, value))
