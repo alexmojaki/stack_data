@@ -29,8 +29,14 @@ def print_stack():
         def convert_variable_range(_):
             return "<var>", "</var>"
 
+        def convert_executing_range(_):
+            return "<exec>", "</exec>"
+
         if isinstance(line, Line):
-            markers = markers_from_ranges(line.variable_ranges, convert_variable_range)
+            markers = (
+                markers_from_ranges(line.variable_ranges, convert_variable_range) +
+                markers_from_ranges(line.executing_node_ranges, convert_executing_range)
+            )
             result += '{:4} {} {}\n'.format(
                 line.lineno,
                 '>' if line.is_current else '|',

@@ -423,7 +423,7 @@ def test_example():
 (...)
   18 | <var>            6</var>
   19 | <var>        ][0]</var>)
-  20 >     result = print_stack()
+  20 >     result = <exec>print_stack()</exec>
   21 |     return result
 x = 1 
 lst = [1, 1, 1] 

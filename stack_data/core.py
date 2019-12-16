@@ -132,28 +132,36 @@ class Line(object):
 
     @property
     def variable_ranges(self):
-        result = []
-        for variable, node in self.frame_info.variables_by_lineno[self.lineno]:
-            start, end = line_range(node)
-            end -= 1
-            assert start <= self.lineno <= end
-            if start == self.lineno:
-                range_start = node.first_token.start[1]
-            else:
-                range_start = 0
+        return [
+            self.range_from_node(node, (variable, node))
+            for variable, node in self.frame_info.variables_by_lineno[self.lineno]
+        ]
 
-            if end == self.lineno:
-                range_end = node.last_token.end[1]
-            else:
-                range_end = len(self.text)
+    @property
+    def executing_node_ranges(self):
+        ex = self.frame_info.executing
+        rang = self.range_from_node(ex.node, ex)
+        if rang:
+            return [rang]
+        else:
+            return []
 
-            result.append(Range(
-                range_start,
-                range_end,
-                (variable, node),
-            ))
+    def range_from_node(self, node, data):
+        start, end = line_range(node)
+        end -= 1
+        if not (start <= self.lineno <= end):
+            return None
+        if start == self.lineno:
+            range_start = node.first_token.start[1]
+        else:
+            range_start = 0
 
-        return result
+        if end == self.lineno:
+            range_end = node.last_token.end[1]
+        else:
+            range_end = len(self.text)
+
+        return Range(range_start, range_end, data)
 
     @property
     def dedented_text(self):
