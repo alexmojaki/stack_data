@@ -42,7 +42,7 @@ class Source(executing.Source):
             while is_blank(end - 1):
                 end -= 1
             if start < end:
-                yield start, end
+                yield Piece(start, end)
 
     def _raw_split_into_pieces(self, stmt):
         self.asttokens()
@@ -184,6 +184,12 @@ class Line(object):
 Range = namedtuple('Range', 'start end data')
 
 
+class Piece(namedtuple('_Piece', 'start end')):
+    @property
+    def range(self):
+        return range(self.start, self.end)
+
+
 def markers_from_ranges(ranges, converter):
     markers = []
     for rang in ranges:
@@ -253,9 +259,9 @@ class FrameInfo(object):
 
         scope_start, scope_end = line_range(self.scope)
         return [
-            (start, end)
-            for (start, end) in self.source.pieces
-            if scope_start <= start and end <= scope_end
+            piece
+            for piece in self.source.pieces
+            if scope_start <= piece.start and piece.end <= scope_end
         ]
 
     @cached_property
@@ -288,9 +294,9 @@ class FrameInfo(object):
     @cached_property
     def executing_piece(self):
         return only(
-            (start, end)
-            for (start, end) in self.scope_pieces
-            if start <= self.lineno < end
+            piece
+            for piece in self.scope_pieces
+            if self.lineno in piece.range
         )
 
     @cached_property
@@ -329,10 +335,9 @@ class FrameInfo(object):
             ):
                 result.append(LINE_GAP)
 
-            start, end = piece
             lines = [
                 Line(self, i)
-                for i in range(start, end)
+                for i in piece.range
             ]
             if piece != self.executing_piece:
                 lines = truncate(
@@ -437,10 +442,9 @@ class FrameInfo(object):
 
     @cached_property
     def variables_in_executing_piece(self):
-        start, end = self.executing_piece
         return unique_in_order(
             var
-            for lineno in range(start, end)
+            for lineno in self.executing_piece.range
             for var, node in self.variables_by_lineno[lineno]
         )
 

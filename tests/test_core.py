@@ -56,9 +56,9 @@ def test_pieces():
     pieces = [
         [
             source.lines[i - 1]
-            for i in range(start, end)
+            for i in piece.range
         ]
-        for start, end in source.pieces
+        for piece in source.pieces
     ]
     assert pieces == [
         ['import math'],
