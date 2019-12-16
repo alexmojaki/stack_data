@@ -86,17 +86,3 @@ def frame_and_lineno(frame_or_tb):
         return frame_or_tb, frame_or_tb.f_lineno
     else:
         return frame_or_tb.tb_frame, frame_or_tb.tb_lineno
-
-
-# Maybe an alternative to the above functions?
-class FrameOrTraceback:
-    def __init__(self, frame_or_tb):
-        assert isinstance(frame_or_tb, (types.FrameType, types.TracebackType))
-        if isinstance(frame_or_tb, types.FrameType):
-            self.frame = frame_or_tb
-            self.lineno = frame_or_tb.f_lineno
-            self.back = frame_or_tb.f_back
-        else:
-            self.frame = frame_or_tb.tb_frame
-            self.lineno = frame_or_tb.tb_lineno
-            self.back = frame_or_tb.tb_next

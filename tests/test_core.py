@@ -141,6 +141,13 @@ def test_markers():
     options = Options(before=0, after=0)
     line = only(FrameInfo(inspect.currentframe(), options).lines)
     assert line.is_current
+    assert repr(line).startswith(
+        "<Line 142 (current=True) "
+        "'    line = only(FrameInfo(inspect.currentframe(), options).lines)' of "
+    )
+    assert repr(line).endswith("test_core.py>")
+    assert repr(LINE_GAP) == "LINE_GAP"
+
     assert '*'.join(t.string for t in line.tokens) == \
            'line*=*only*(*FrameInfo*(*inspect*.*currentframe*(*)*,*options*)*.*lines*)*\n'
 
@@ -170,6 +177,7 @@ def test_markers():
 
 def test_variables():
     options = Options(before=1, after=0)
+    assert repr(options) == 'Options(after=0, before=1, include_signature=False, max_lines_per_piece=6)'
 
     def foo(arg):
         y = 123986
@@ -323,7 +331,7 @@ def test_skipping_frames():
             if isinstance(x, FrameInfo):
                 result.append((x.code, x.lineno))
             else:
-                result.append(x.description)
+                result.append(repr(x))
         source = Source.for_filename(__file__)
         linenos = {}
         for lineno, line in enumerate(source.lines):
@@ -340,8 +348,9 @@ def test_skipping_frames():
             simple_frame(foo),
             simple_frame(factorial),
             simple_frame(foo),
-            ("test_skipping_frames.<locals>.factorial at line {factorial} (16 times), "
-             "test_skipping_frames.<locals>.foo at line {foo} (16 times)"
+            ("<RepeatedFrames "
+             "test_skipping_frames.<locals>.factorial at line {factorial} (16 times), "
+             "test_skipping_frames.<locals>.foo at line {foo} (16 times)>"
              ).format(**linenos),
             simple_frame(factorial),
             simple_frame(foo),

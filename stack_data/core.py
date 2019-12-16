@@ -74,7 +74,7 @@ def cached_property(func):
     return property(wrapper)
 
 
-class Options(object):
+class Options:
     def __init__(
             self,
             before=3,
@@ -86,6 +86,11 @@ class Options(object):
         self.after = after
         self.include_signature = include_signature
         self.max_lines_per_piece = max_lines_per_piece
+
+    def __repr__(self):
+        keys = sorted(self.__dict__)
+        items = ("{}={!r}".format(k, self.__dict__[k]) for k in keys)
+        return "{}({})".format(type(self).__name__, ", ".join(items))
 
 
 class _LineGap(object):
