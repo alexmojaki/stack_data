@@ -194,6 +194,9 @@ class Piece(namedtuple('_Piece', 'start end')):
         return range(self.start, self.end)
 
 
+Variable = namedtuple('Variable', 'name nodes value')
+
+
 def markers_from_ranges(ranges, converter):
     markers = []
     for rang in ranges:
@@ -450,10 +453,3 @@ class FrameInfo(object):
             for lineno in self.executing_piece.range
             for var, node in self.variables_by_lineno[lineno]
         )
-
-
-class Variable(object):
-    def __init__(self, name, nodes, value):
-        self.name = name
-        self.nodes = nodes
-        self.value = value

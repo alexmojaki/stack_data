@@ -9,7 +9,7 @@ from pathlib import Path
 
 from executing import only
 
-from stack_data import Options, Line, LINE_GAP, markers_from_ranges
+from stack_data import Options, Line, LINE_GAP, markers_from_ranges, Variable
 from stack_data import Source, FrameInfo
 from stack_data.utils import line_range
 
@@ -163,6 +163,70 @@ def test_markers():
     ]
     assert line.render_with_markers(markers) == \
            '[[line of type Line]] = only(FrameInfo(inspect.currentframe(), [[options of type Options]]).lines)'
+
+
+def test_variables():
+    options = Options(before=1, after=0)
+
+    def foo(arg):
+        y = 123986
+        str(y)
+        x = 982347298304
+        str(x)
+        return (
+            FrameInfo(inspect.currentframe(), options),
+            arg,
+            arg,
+        )[0]
+
+    frame_info = foo('this is arg')
+
+    body = frame_info.scope.body
+    variables = sorted(frame_info.variables)
+
+    tup = body[-1].value.value.elts
+    assert variables == [
+        Variable(
+            name='arg',
+            nodes=(
+                tup[1],
+                tup[2],
+                frame_info.scope.args.args[0],
+            ),
+            value='this is arg',
+        ),
+        Variable(
+            name='options',
+            nodes=(tup[0].args[1],),
+            value=options,
+        ),
+        Variable(
+            name='x',
+            nodes=(
+                body[2].targets[0],
+                body[3].value.args[0],
+            ),
+            value=982347298304,
+        ),
+        Variable(
+            name='y',
+            nodes=(
+                body[0].targets[0],
+                body[1].value.args[0],
+            ),
+            value=123986,
+        ),
+    ]
+
+    assert (
+            sorted(frame_info.variables_in_executing_piece) ==
+            variables[:2]
+    )
+
+    assert (
+            sorted(frame_info.variables_in_lines) ==
+            variables[:3]
+    )
 
 
 def test_pieces():
