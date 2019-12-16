@@ -31,7 +31,11 @@ def print_stack():
 
         if isinstance(line, Line):
             markers = markers_from_ranges(line.variable_ranges, convert_variable_range)
-            result += '{:4} | {}\n'.format(line.lineno, line.render_with_markers(markers))
+            result += '{:4} {} {}\n'.format(
+                line.lineno,
+                '>' if line.is_current else '|',
+                line.render_with_markers(markers)
+            )
         else:
             assert line is LINE_GAP
             result += '(...)\n'
