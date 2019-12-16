@@ -413,6 +413,19 @@ def check_pieces(source):
 def test_example():
     from .samples.example import foo
     assert foo() == """\
+bar at line 26
+--------------
+  24 | def bar():
+  25 |     <var>names</var> = {}
+  26 >     <exec>exec("result = foo()", globals(), <var>names</var>)</exec>
+  27 |     return <var>names</var>["result"]
+names = {} 
+
+<module> at line 1
+------------------
+
+foo at line 20
+--------------
    6 | def foo():
 (...)
    8 |     <var>lst</var> = [1]

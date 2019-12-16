@@ -140,11 +140,12 @@ class Line(object):
     @property
     def executing_node_ranges(self):
         ex = self.frame_info.executing
-        rang = self.range_from_node(ex.node, ex)
-        if rang:
-            return [rang]
-        else:
-            return []
+        node = ex.node
+        if node:
+            rang = self.range_from_node(node, ex)
+            if rang:
+                return [rang]
+        return []
 
     def range_from_node(self, node, data):
         start, end = line_range(node)

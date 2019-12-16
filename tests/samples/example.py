@@ -21,9 +21,27 @@ def foo():
     return result
 
 
+def bar():
+    names = {}
+    exec("result = foo()", globals(), names)
+    return names["result"]
+
+
 def print_stack():
     result = ""
-    frame_info = FrameInfo(inspect.currentframe().f_back, Options(include_signature=True))
+    options = Options(include_signature=True)
+    frame = inspect.currentframe().f_back
+    for frame_info in list(FrameInfo.stack_data(frame, options))[:3][::-1]:
+        result += render_frame_info(frame_info) + "\n"
+    return result
+
+
+def render_frame_info(frame_info):
+    result = "{} at line {}".format(
+        frame_info.executing.code_qualname(),
+        frame_info.lineno
+    )
+    result += '\n' + len(result) * '-' + '\n'
 
     for line in frame_info.lines:
         def convert_variable_range(_):
@@ -48,5 +66,8 @@ def print_stack():
 
     for var in frame_info.variables:
         result += " ".join([var.name, '=', repr(var.value), '\n'])
-    print(result)
     return result
+
+
+if __name__ == '__main__':
+    print(bar())
