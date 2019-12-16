@@ -190,6 +190,8 @@ def test_variables():
     variables = sorted(frame_info.variables)
 
     tup = body[-1].value.value.elts
+    call = tup[0]
+    assert frame_info.executing.node == call
     assert variables == [
         Variable(
             name='arg',
@@ -202,7 +204,7 @@ def test_variables():
         ),
         Variable(
             name='options',
-            nodes=(tup[0].args[1],),
+            nodes=(call.args[1],),
             value=options,
         ),
         Variable(
