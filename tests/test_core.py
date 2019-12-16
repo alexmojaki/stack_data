@@ -3,10 +3,13 @@ import inspect
 import os
 import re
 import sys
+import token
 from itertools import islice
 from pathlib import Path
 
-from stack_data import Options, Line, LINE_GAP
+from executing import only
+
+from stack_data import Options, Line, LINE_GAP, markers_from_ranges
 from stack_data import Source, FrameInfo
 from stack_data.utils import line_range
 
@@ -132,6 +135,34 @@ def test_lines_with_gaps():
         '        ][0])',
         '    lst += [99]'
     ]
+
+
+def test_markers():
+    options = Options(before=0, after=0)
+    line = only(FrameInfo(inspect.currentframe(), options).lines)
+    assert '*'.join(t.string for t in line.tokens) == \
+           'line*=*only*(*FrameInfo*(*inspect*.*currentframe*(*)*,*options*)*.*lines*)*\n'
+
+    def convert_token_range(r):
+        if r.data.type == token.NAME:
+            return '[[', ']]'
+
+    markers = markers_from_ranges(line.token_ranges, convert_token_range)
+    assert line.render_with_markers(markers) == \
+           '[[line]] = [[only]]([[FrameInfo]]([[inspect]].[[currentframe]](), [[options]]).[[lines]])'
+
+    def convert_variable_range(r):
+        return '[[', ' of type {}]]'.format(r.data[0].value.__class__.__name__)
+
+    markers = markers_from_ranges(line.variable_ranges, convert_variable_range)
+    assert sorted(markers) == [
+        (4, True, '[['),
+        (8, False, ' of type Line]]'),
+        (50, True, '[['),
+        (57, False, ' of type Options]]'),
+    ]
+    assert line.render_with_markers(markers) == \
+           '[[line of type Line]] = only(FrameInfo(inspect.currentframe(), [[options of type Options]]).lines)'
 
 
 def test_pieces():

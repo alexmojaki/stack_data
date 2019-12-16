@@ -6,7 +6,7 @@ from textwrap import dedent
 
 import executing
 from littleutils import only, group_by_key_func
-from pure_eval import Evaluator
+from pure_eval import Evaluator, is_expression_interesting
 
 from stack_data.utils import truncate, unique_in_order, line_range, frame_and_lineno, iter_stack, collapse_repeated
 
@@ -164,7 +164,7 @@ class Line(object):
 
         # This just makes the loop below simpler
         # Don't use append or += to not mutate the input
-        markers = markers + [(len(text), False, '')]
+        markers = markers + [Marker(position=len(text), is_start=False, string='')]
 
         markers.sort(key=lambda t: t[:2])
 
@@ -175,16 +175,17 @@ class Line(object):
             start = 0
         original_start = start
 
-        for position, _is_start, part in markers:
-            parts.append(text[start:position])
-            parts.append(part)
+        for marker in markers:
+            parts.append(text[start:marker.position])
+            parts.append(marker.string)
 
             # Ensure that start >= leading_indent
-            start = max(position, original_start)
+            start = max(marker.position, original_start)
         return ''.join(parts)
 
 
 Range = namedtuple('Range', 'start end data')
+Marker = namedtuple('Marker', 'position is_start string')
 
 
 class Piece(namedtuple('_Piece', 'start end')):
@@ -201,8 +202,8 @@ def markers_from_ranges(ranges, converter):
             continue
 
         markers += [
-            (rang[0], True, converted[0]),
-            (rang[1], False, converted[1]),
+            Marker(position=rang[0], is_start=True, string=converted[0]),
+            Marker(position=rang[1], is_start=False, string=converted[1]),
         ]
 
     return markers
@@ -389,7 +390,11 @@ class FrameInfo(object):
         evaluator = Evaluator.from_frame(self.frame)
         get_text = self.source.asttokens().get_text
         scope = self.scope
-        node_values = evaluator.find_expressions(scope)
+        node_values = [
+            pair
+            for pair in evaluator.find_expressions(scope)
+            if is_expression_interesting(*pair)
+        ]
 
         if isinstance(scope, ast.FunctionDef):
             for node in ast.walk(scope.args):
