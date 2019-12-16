@@ -411,8 +411,10 @@ def check_pieces(source):
 
 
 def test_example():
-    from .samples.example import foo
-    assert foo() == """\
+    from .samples.example import bar
+    result = bar()
+    print(result)
+    assert result == """\
 bar at line 26
 --------------
   24 | def bar():
@@ -448,4 +450,5 @@ lst = [1, 1, 1]
             5,
             6
         ][0] = 1 
+
 """
