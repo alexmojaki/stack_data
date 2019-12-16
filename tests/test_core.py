@@ -400,3 +400,31 @@ def check_pieces(source):
 
     for lineno in blank_linenos:
         assert not source.lines[lineno - 1].strip(), lineno
+
+
+def test_example():
+    from .samples.example import foo
+    assert foo() == """\
+   6 | def foo():
+(...)
+   8 |     lst = [1]
+  10 |     lst.insert(0, x)
+  11 |     lst.append(
+  12 |         [
+  13 |             1,
+(...)
+  18 |             6
+  19 |         ][0])
+  20 |     result = print_stack()
+  21 |     return result
+x = 1 
+lst = [1, 1, 1] 
+[
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ][0] = 1 
+"""
