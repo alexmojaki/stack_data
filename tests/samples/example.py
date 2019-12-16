@@ -1,6 +1,6 @@
 import inspect
 
-from stack_data import FrameInfo, Options, Line, LINE_GAP
+from stack_data import FrameInfo, Options, Line, LINE_GAP, markers_from_ranges
 
 
 def foo():
@@ -26,8 +26,12 @@ def print_stack():
     frame_info = FrameInfo(inspect.currentframe().f_back, Options(include_signature=True))
 
     for line in frame_info.lines:
+        def convert_variable_range(_):
+            return "<var>", "</var>"
+
         if isinstance(line, Line):
-            result += '{:4} | {}\n'.format(line.lineno, line.dedented_text)
+            markers = markers_from_ranges(line.variable_ranges, convert_variable_range)
+            result += '{:4} | {}\n'.format(line.lineno, line.render_with_markers(markers))
         else:
             assert line is LINE_GAP
             result += '(...)\n'

@@ -415,14 +415,14 @@ def test_example():
     assert foo() == """\
    6 | def foo():
 (...)
-   8 |     lst = [1]
-  10 |     lst.insert(0, x)
-  11 |     lst.append(
-  12 |         [
-  13 |             1,
+   8 |     <var>lst</var> = [1]
+  10 |     <var>lst</var>.insert(0, <var>x</var>)
+  11 |     <var>lst</var>.append(
+  12 |         <var>[</var>
+  13 | <var>            1,</var>
 (...)
-  18 |             6
-  19 |         ][0])
+  18 | <var>            6</var>
+  19 | <var>        ][0]</var>)
   20 |     result = print_stack()
   21 |     return result
 x = 1 
