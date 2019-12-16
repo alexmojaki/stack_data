@@ -140,6 +140,7 @@ def test_lines_with_gaps():
 def test_markers():
     options = Options(before=0, after=0)
     line = only(FrameInfo(inspect.currentframe(), options).lines)
+    assert line.is_current
     assert '*'.join(t.string for t in line.tokens) == \
            'line*=*only*(*FrameInfo*(*inspect*.*currentframe*(*)*,*options*)*.*lines*)*\n'
 
@@ -180,6 +181,8 @@ def test_variables():
         )[0]
 
     frame_info = foo('this is arg')
+
+    assert sum(line.is_current for line in frame_info.lines) == 1
 
     body = frame_info.scope.body
     variables = sorted(frame_info.variables)
