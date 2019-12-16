@@ -13,13 +13,15 @@ from stack_data.utils import line_range
 
 def test_lines_with_gaps():
     lines = []
+    dedented = False
 
     def gather_lines():
-        frame_info = FrameInfo(inspect.currentframe().f_back, Options(include_signature=True))
-        for line in frame_info.lines:
-            if isinstance(line, Line):
-                line = line.text
-            lines.append(line)
+        frame_info = FrameInfo(inspect.currentframe().f_back, options)
+        lines[:] = [
+            (line.dedented_text if dedented else line.text)
+            if isinstance(line, Line) else line
+            for line in frame_info.lines
+        ]
 
     def foo():
         x = 1
@@ -36,8 +38,10 @@ def test_lines_with_gaps():
                 6
             ][0])
         gather_lines()
+        lst += [99]
         return lst
 
+    options = Options(include_signature=True)
     foo()
     assert lines == [
         '    def foo():',
@@ -51,7 +55,82 @@ def test_lines_with_gaps():
         '                6',
         '            ][0])',
         '        gather_lines()',
-        '        return lst',
+        '        lst += [99]',
+    ]
+
+    options = Options()
+    foo()
+    assert lines == [
+        '        lst = [1]',
+        '        lst.insert(0, x)',
+        '        lst.append(',
+        '            [',
+        '                1,',
+        LINE_GAP,
+        '                6',
+        '            ][0])',
+        '        gather_lines()',
+        '        lst += [99]',
+    ]
+
+    def foo():
+        gather_lines()
+
+    foo()
+    assert lines == [
+        '    def foo():',
+        '        gather_lines()',
+    ]
+
+    def foo():
+        lst = [1]
+        lst.insert(0, 2)
+        lst.append(
+            [
+                1,
+                2,
+                3,
+                gather_lines(),
+                5,
+                6
+            ][0])
+        lst += [99]
+        return lst
+
+    foo()
+    assert lines == [
+        '    def foo():',
+        '        lst = [1]',
+        '        lst.insert(0, 2)',
+        '        lst.append(',
+        '            [',
+        '                1,',
+        '                2,',
+        '                3,',
+        '                gather_lines(),',
+        '                5,',
+        '                6',
+        '            ][0])',
+        '        lst += [99]'
+    ]
+
+    dedented = True
+
+    foo()
+    assert lines == [
+        'def foo():',
+        '    lst = [1]',
+        '    lst.insert(0, 2)',
+        '    lst.append(',
+        '        [',
+        '            1,',
+        '            2,',
+        '            3,',
+        '            gather_lines(),',
+        '            5,',
+        '            6',
+        '        ][0])',
+        '    lst += [99]'
     ]
 
 
