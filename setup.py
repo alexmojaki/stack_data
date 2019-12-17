@@ -20,7 +20,6 @@ contents = file_to_string(package, '__init__.py')
 __version__ = re.search(r"__version__ = '([.\d]+)'", contents).group(1)
 
 install_requires = [
-    'littleutils',
     'executing',
     'asttokens',
     'pure_eval',

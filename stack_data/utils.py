@@ -1,6 +1,6 @@
 import itertools
 import types
-from collections import OrderedDict, Counter
+from collections import OrderedDict, Counter, defaultdict
 
 
 def truncate(seq, max_length, middle):
@@ -86,3 +86,20 @@ def frame_and_lineno(frame_or_tb):
         return frame_or_tb, frame_or_tb.f_lineno
     else:
         return frame_or_tb.tb_frame, frame_or_tb.tb_lineno
+
+
+def group_by_key_func(iterable, key_func):
+    """
+    Create a dictionary from an iterable such that the keys are the result of evaluating a key function on elements
+    of the iterable and the values are lists of elements all of which correspond to the key.
+
+    >>> def si(d): return sorted(d.items())
+    >>> si(group_by_key_func("a bb ccc d ee fff".split(), len))
+    [(1, ['a', 'd']), (2, ['bb', 'ee']), (3, ['ccc', 'fff'])]
+    >>> si(group_by_key_func([-1, 0, 1, 3, 6, 8, 9, 2], lambda x: x % 2))
+    [(0, [0, 6, 8, 2]), (1, [-1, 1, 3, 9])]
+    """
+    result = defaultdict(list)
+    for item in iterable:
+        result[key_func(item)].append(item)
+    return result

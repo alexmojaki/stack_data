@@ -5,10 +5,13 @@ from collections import defaultdict, namedtuple, Counter
 from textwrap import dedent
 
 import executing
-from littleutils import only, group_by_key_func
+from executing import only
 from pure_eval import Evaluator, is_expression_interesting
 
-from stack_data.utils import truncate, unique_in_order, line_range, frame_and_lineno, iter_stack, collapse_repeated
+from stack_data.utils import (
+    truncate, unique_in_order, line_range,
+    frame_and_lineno, iter_stack, collapse_repeated, group_by_key_func,
+)
 
 
 class Source(executing.Source):
