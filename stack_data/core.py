@@ -52,7 +52,7 @@ class Source(executing.Source):
 
         for name, body in ast.iter_fields(stmt):
             if isinstance(body, list) and body and isinstance(body[0], (ast.stmt, ast.ExceptHandler)):
-                for rang, group in group_by_key_func(body, line_range).items():
+                for rang, group in sorted(group_by_key_func(body, line_range).items()):
                     sub_stmt = group[0]
                     for inner_start, inner_end in self._raw_split_into_pieces(sub_stmt, *rang):
                         yield start, inner_start
@@ -107,7 +107,7 @@ class Line(object):
             frame_info,
             lineno,
     ):
-        self.frame_info: FrameInfo = frame_info
+        self.frame_info = frame_info
         self.lineno = lineno
         self.text = frame_info.source.lines[lineno - 1]
         self.leading_indent = None
@@ -233,7 +233,8 @@ class RepeatedFrames:
 
     @property
     def description(self):
-        counts = Counter(self.frame_keys).most_common()
+        counts = sorted(Counter(self.frame_keys).items(),
+                        key=lambda item: (item[1], item[0][0].co_name))
         return ', '.join(
             '{name} at line {lineno} ({count} times)'.format(
                 name=Source.for_filename(code.co_filename).code_qualname(code),

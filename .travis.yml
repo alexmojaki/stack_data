@@ -1,0 +1,29 @@
+dist: xenial
+language: python
+sudo: false
+
+python:
+  - 3.5
+  - 3.6
+  - 3.7
+  - 3.8-dev
+
+env:
+  global:
+    - STACK_DATA_SLOW_TESTS=1
+    - COVERALLS_PARALLEL=true
+
+install:
+  - pip install coveralls
+  - pip install .[tests]
+
+script:
+  - coverage run --include='stack_data/*' -m pytest
+  - coverage report -m
+
+after_success:
+  - coveralls
+
+notifications:
+  webhooks: https://coveralls.io/webhook
+  email: false

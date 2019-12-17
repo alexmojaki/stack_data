@@ -23,10 +23,12 @@ install_requires = [
     'littleutils',
     'executing',
     'asttokens',
+    'pure_eval',
 ]
 
 
 tests_require = [
+    'pytest',
 ]
 
 setup(

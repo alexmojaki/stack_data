@@ -64,7 +64,7 @@ def render_frame_info(frame_info):
             assert line is LINE_GAP
             result += '(...)\n'
 
-    for var in frame_info.variables:
+    for var in sorted(frame_info.variables, key=lambda v: v.name):
         result += " ".join([var.name, '=', repr(var.value), '\n'])
     return result
 

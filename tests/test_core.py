@@ -449,8 +449,6 @@ foo at line 20
   19 | <var>        ][0]</var>)
   20 >     result = <exec>print_stack()</exec>
   21 |     return result
-x = 1 
-lst = [1, 1, 1] 
 [
             1,
             2,
@@ -459,5 +457,7 @@ lst = [1, 1, 1]
             5,
             6
         ][0] = 1 
+lst = [1, 1, 1] 
+x = 1 
 
 """
