@@ -182,7 +182,7 @@ def test_variables():
     def foo(arg):
         y = 123986
         str(y)
-        x = 982347298304
+        x = {982347298304}
         str(x)
         return (
             FrameInfo(inspect.currentframe(), options),
@@ -225,7 +225,7 @@ def test_variables():
                 body[2].targets[0],
                 body[3].value.args[0],
             ),
-            value=982347298304,
+            value={982347298304},
         ),
         Variable(
             name='y',

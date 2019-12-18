@@ -211,7 +211,8 @@ class Piece(namedtuple('_Piece', 'start end')):
         return range(self.start, self.end)
 
 
-Variable = namedtuple('Variable', 'name nodes value')
+class Variable(namedtuple('_Variable', 'name nodes value')):
+    __hash__ = object.__hash__
 
 
 def markers_from_ranges(ranges, converter):
