@@ -392,7 +392,7 @@ class FrameInfo(object):
 
     @cached_property
     def scope(self):
-        if not self.source.tree:
+        if not self.source.tree or not self.executing.statements:
             return None
 
         stmt = list(self.executing.statements)[0]
