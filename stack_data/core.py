@@ -283,7 +283,7 @@ class FrameInfo(object):
 
     @cached_property
     def scope_pieces(self):
-        if not self.source.tree:
+        if not self.scope:
             return []
 
         scope_start, scope_end = line_range(self.scope)
@@ -409,7 +409,7 @@ class FrameInfo(object):
 
     @cached_property
     def variables(self):
-        if not self.source.tree:
+        if not self.scope:
             return []
 
         evaluator = Evaluator.from_frame(self.frame)
