@@ -241,7 +241,7 @@ class RepeatedFrames:
     @property
     def description(self):
         counts = sorted(Counter(self.frame_keys).items(),
-                        key=lambda item: (item[1], item[0][0].co_name))
+                        key=lambda item: (-item[1], item[0][0].co_name))
         return ', '.join(
             '{name} at line {lineno} ({count} times)'.format(
                 name=Source.for_filename(code.co_filename).code_qualname(code),
