@@ -31,10 +31,13 @@ class Source(executing.Source):
             for (start, end) in pieces
             if end > start
         ]
-        assert (
-                [end for start, end in pieces[:-1]] ==
-                [start for start, end in pieces[1:]]
-        )
+
+        starts = [start for start, end in pieces[1:]]
+        ends = [end for start, end in pieces[:-1]]
+        if starts != ends:
+            joins = list(map(set, zip(starts, ends)))
+            mismatches = [s for s in joins if len(s) > 1]
+            raise AssertionError("Pieces mismatches: %s" % mismatches)
 
         def is_blank(i):
             try:
