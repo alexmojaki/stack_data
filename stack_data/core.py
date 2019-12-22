@@ -63,17 +63,14 @@ class Source(executing.Source):
     def __init__(self, *args, **kwargs):
         super(Source, self).__init__(*args, **kwargs)
         if self.tree:
-            self.lines = self.text.split('\n')
             self.pieces = list(self._clean_pieces())  # type: List[Piece]
             self.tokens_by_lineno = group_by_key_func(
                 self.asttokens().tokens,
                 lambda tok: tok.start[0],
             )  # type: Mapping[int, List[TokenInfo]]
-        else:
-            self.lines = []
 
     def _clean_pieces(self) -> Iterator[Piece]:
-        pieces = self._raw_split_into_pieces(self.tree, 0, len(self.lines))
+        pieces = self._raw_split_into_pieces(self.tree, 1, len(self.lines))
         pieces = [
             (start, end)
             for (start, end) in pieces
