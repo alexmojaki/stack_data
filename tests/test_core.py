@@ -254,7 +254,7 @@ def test_pieces():
     pieces = [
         [
             source.lines[i - 1]
-            for i in piece.range
+            for i in piece
         ]
         for piece in source.pieces
     ]
@@ -389,7 +389,7 @@ def test_sys_modules():
 def check_pieces(source):
     pieces = source.pieces
 
-    assert pieces == sorted(pieces)
+    assert pieces == sorted(pieces, key=lambda p: (p.start, p.stop))
 
     stmts = sorted({
         line_range(node)
@@ -403,8 +403,8 @@ def check_pieces(source):
     stmts_iter = iter(stmts)
     stmt = next(stmts_iter)
     for piece in pieces:
-        contains_stmt = stmt[0] <= piece[0] < piece[1] <= stmt[1]
-        before_stmt = piece[0] < piece[1] <= stmt[0] < stmt[1]
+        contains_stmt = stmt[0] <= piece.start < piece.stop <= stmt[1]
+        before_stmt = piece.start < piece.stop <= stmt[0] < stmt[1]
         assert contains_stmt ^ before_stmt
         if contains_stmt:
             try:
@@ -412,8 +412,7 @@ def check_pieces(source):
             except StopIteration:
                 break
 
-    blank_linenos = set(range(1, len(source.lines) + 1)).difference(
-        *(piece.range for piece in pieces))
+    blank_linenos = set(range(1, len(source.lines) + 1)).difference(*pieces)
 
     for lineno in blank_linenos:
         assert not source.lines[lineno - 1].strip(), lineno

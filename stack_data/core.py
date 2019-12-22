@@ -20,20 +20,20 @@ from stack_data.utils import (
     frame_and_lineno, iter_stack, collapse_repeated, group_by_key_func,
 )
 
-Range = NamedTuple('Range',
-                   [('start', int),
-                    ('end', int),
-                    ('data', Any)])
+RangeInLine = NamedTuple('RangeInLine',
+                         [('start', int),
+                          ('end', int),
+                          ('data', Any)])
 
-Marker = NamedTuple('Marker',
-                    [('position', int),
-                     ('is_start', bool),
-                     ('string', str)])
+MarkerInLine = NamedTuple('MarkerInLine',
+                          [('position', int),
+                           ('is_start', bool),
+                           ('string', str)])
 
 
-class Piece(NamedTuple('_Piece',
-                       [('start', int),
-                        ('end', int)])):
+class RangeOfLines(NamedTuple('RangeOfLines',
+                              [('start', int),
+                               ('end', int)])):
     @property
     def range(self) -> range:
         return range(self.start, self.end)
@@ -63,13 +63,13 @@ class Source(executing.Source):
     def __init__(self, *args, **kwargs):
         super(Source, self).__init__(*args, **kwargs)
         if self.tree:
-            self.pieces = list(self._clean_pieces())  # type: List[Piece]
+            self.pieces = list(self._clean_pieces())  # type: List[range]
             self.tokens_by_lineno = group_by_key_func(
                 self.asttokens().tokens,
                 lambda tok: tok.start[0],
             )  # type: Mapping[int, List[TokenInfo]]
 
-    def _clean_pieces(self) -> Iterator[Piece]:
+    def _clean_pieces(self) -> Iterator[range]:
         pieces = self._raw_split_into_pieces(self.tree, 1, len(self.lines))
         pieces = [
             (start, end)
@@ -96,7 +96,7 @@ class Source(executing.Source):
             while is_blank(end - 1):
                 end -= 1
             if start < end:
-                yield Piece(start, end)
+                yield range(start, end)
 
     def _raw_split_into_pieces(
             self,
@@ -184,9 +184,9 @@ class Line(object):
         return self.frame_info.source.tokens_by_lineno[self.lineno]
 
     @property
-    def token_ranges(self) -> List[Range]:
+    def token_ranges(self) -> List[RangeInLine]:
         return [
-            Range(
+            RangeInLine(
                 token.start[1],
                 token.end[1],
                 token,
@@ -195,14 +195,14 @@ class Line(object):
         ]
 
     @property
-    def variable_ranges(self) -> List[Range]:
+    def variable_ranges(self) -> List[RangeInLine]:
         return [
             self.range_from_node(node, (variable, node))
             for variable, node in self.frame_info.variables_by_lineno[self.lineno]
         ]
 
     @property
-    def executing_node_ranges(self) -> List[Range]:
+    def executing_node_ranges(self) -> List[RangeInLine]:
         ex = self.frame_info.executing
         node = ex.node
         if node:
@@ -211,7 +211,7 @@ class Line(object):
                 return [rang]
         return []
 
-    def range_from_node(self, node: ast.AST, data: Any) -> Optional[Range]:
+    def range_from_node(self, node: ast.AST, data: Any) -> Optional[RangeInLine]:
         start, end = line_range(node)
         end -= 1
         if not (start <= self.lineno <= end):
@@ -226,7 +226,7 @@ class Line(object):
         else:
             range_end = len(self.text)
 
-        return Range(range_start, range_end, data)
+        return RangeInLine(range_start, range_end, data)
 
     @property
     def dedented_text(self) -> str:
@@ -234,14 +234,14 @@ class Line(object):
 
     def render_with_markers(
             self,
-            markers: Iterable[Marker],
+            markers: Iterable[MarkerInLine],
             strip_leading_indent: bool = True,
     ) -> str:
         text = self.text
 
         # This just makes the loop below simpler
         # Don't use append or += to not mutate the input
-        markers = list(markers) + [Marker(position=len(text), is_start=False, string='')]
+        markers = list(markers) + [MarkerInLine(position=len(text), is_start=False, string='')]
 
         markers.sort(key=lambda t: t[:2])
 
@@ -262,9 +262,9 @@ class Line(object):
 
 
 def markers_from_ranges(
-        ranges: Iterable[Range],
-        converter: Callable[[Range], Optional[Tuple[str, str]]],
-) -> List[Marker]:
+        ranges: Iterable[RangeInLine],
+        converter: Callable[[RangeInLine], Optional[Tuple[str, str]]],
+) -> List[MarkerInLine]:
     markers = []
     for rang in ranges:
         converted = converter(rang)
@@ -273,8 +273,8 @@ def markers_from_ranges(
 
         start_string, end_string = converted
         markers += [
-            Marker(position=rang.start, is_start=True, string=start_string),
-            Marker(position=rang.end, is_start=False, string=end_string),
+            MarkerInLine(position=rang.start, is_start=True, string=start_string),
+            MarkerInLine(position=rang.end, is_start=False, string=end_string),
         ]
     return markers
 
@@ -340,7 +340,7 @@ class FrameInfo(object):
         )
 
     @cached_property
-    def scope_pieces(self) -> List[Piece]:
+    def scope_pieces(self) -> List[range]:
         if not self.scope:
             return []
 
@@ -348,7 +348,7 @@ class FrameInfo(object):
         return [
             piece
             for piece in self.source.pieces
-            if scope_start <= piece.start and piece.end <= scope_end
+            if scope_start <= piece.start and piece.stop <= scope_end
         ]
 
     @cached_property
@@ -380,15 +380,15 @@ class FrameInfo(object):
         return result
 
     @cached_property
-    def executing_piece(self) -> Piece:
+    def executing_piece(self) -> range:
         return only(
             piece
             for piece in self.scope_pieces
-            if self.lineno in piece.range
+            if self.lineno in piece
         )
 
     @cached_property
-    def included_pieces(self) -> List[Piece]:
+    def included_pieces(self) -> List[range]:
         scope_pieces = self.scope_pieces
         if not self.scope_pieces:
             return []
@@ -425,7 +425,7 @@ class FrameInfo(object):
 
             lines = [
                 Line(self, i)
-                for i in piece.range
+                for i in piece
             ]  # type: List[Line]
             if piece != self.executing_piece:
                 lines = truncate(
@@ -531,6 +531,6 @@ class FrameInfo(object):
     def variables_in_executing_piece(self) -> List[Variable]:
         return unique_in_order(
             var
-            for lineno in self.executing_piece.range
+            for lineno in self.executing_piece
             for var, node in self.variables_by_lineno[lineno]
         )
