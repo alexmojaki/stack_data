@@ -369,7 +369,8 @@ class FrameInfo(object):
 
         # Try to make the filename absolute by trying all
         # sys.path entries (which is also what linecache does)
-        for dirname in sys.path:
+        # as well as the current working directory
+        for dirname in ["."] + list(sys.path):
             try:
                 fullname = os.path.join(dirname, result)
                 if os.path.isfile(fullname):

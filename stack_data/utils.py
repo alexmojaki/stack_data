@@ -98,6 +98,7 @@ def frame_and_lineno(frame_or_tb: Union[FrameType, TracebackType]) -> Tuple[Fram
 
 
 def group_by_key_func(iterable: Iterable[T], key_func: Callable[[T], R]) -> Mapping[R, List[T]]:
+    # noinspection PyUnresolvedReferences
     """
     Create a dictionary from an iterable such that the keys are the result of evaluating a key function on elements
     of the iterable and the values are lists of elements all of which correspond to the key.
