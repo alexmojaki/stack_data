@@ -12,7 +12,7 @@ T = TypeVar('T')
 R = TypeVar('R')
 
 
-def truncate(seq: T, max_length: int, middle: T) -> T:
+def truncate(seq, max_length: int, middle):
     if len(seq) > max_length:
         right = (max_length - len(middle)) // 2
         left = max_length - len(middle) - right
