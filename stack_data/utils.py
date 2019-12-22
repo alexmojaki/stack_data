@@ -1,9 +1,18 @@
+import ast
 import itertools
 import types
 from collections import OrderedDict, Counter, defaultdict
+from types import FrameType, TracebackType
+from typing import (
+    Iterator, List, Tuple, Iterable, Callable, Union,
+    TypeVar, Mapping,
+)
+
+T = TypeVar('T')
+R = TypeVar('R')
 
 
-def truncate(seq, max_length, middle):
+def truncate(seq: T, max_length: int, middle: T) -> T:
     if len(seq) > max_length:
         right = (max_length - len(middle)) // 2
         left = max_length - len(middle) - right
@@ -11,18 +20,18 @@ def truncate(seq, max_length, middle):
     return seq
 
 
-def unique_in_order(it):
+def unique_in_order(it: Iterable[T]) -> List[T]:
     return list(OrderedDict.fromkeys(it))
 
 
-def line_range(node):
+def line_range(node: ast.AST) -> Tuple[int, int]:
     return (
         node.first_token.start[0],
         node.last_token.end[0] + 1,
     )
 
 
-def highlight_unique(lst):
+def highlight_unique(lst: List[T]) -> Iterator[Tuple[T, bool]]:
     counts = Counter(lst)
 
     for is_common, group in itertools.groupby(lst, key=lambda x: counts[x] > 3):
@@ -49,7 +58,7 @@ def highlight_unique(lst):
         yield from zip(group, highlighted)
 
 
-def identity(x):
+def identity(x: T) -> T:
     return x
 
 
@@ -67,12 +76,12 @@ def collapse_repeated(lst, *, collapser, mapper=identity, key=identity):
             yield collapser(original_group, keyed_group)
 
 
-def is_frame(frame_or_tb):
+def is_frame(frame_or_tb: Union[FrameType, TracebackType]) -> bool:
     assert isinstance(frame_or_tb, (types.FrameType, types.TracebackType))
     return isinstance(frame_or_tb, (types.FrameType,))
 
 
-def iter_stack(frame_or_tb):
+def iter_stack(frame_or_tb: Union[FrameType, TracebackType]) -> Iterator[Union[FrameType, TracebackType]]:
     while frame_or_tb:
         yield frame_or_tb
         if is_frame(frame_or_tb):
@@ -81,14 +90,14 @@ def iter_stack(frame_or_tb):
             frame_or_tb = frame_or_tb.tb_next
 
 
-def frame_and_lineno(frame_or_tb):
+def frame_and_lineno(frame_or_tb: Union[FrameType, TracebackType]) -> Tuple[FrameType, int]:
     if is_frame(frame_or_tb):
         return frame_or_tb, frame_or_tb.f_lineno
     else:
         return frame_or_tb.tb_frame, frame_or_tb.tb_lineno
 
 
-def group_by_key_func(iterable, key_func):
+def group_by_key_func(iterable: Iterable[T], key_func: Callable[[T], R]) -> Mapping[R, List[T]]:
     """
     Create a dictionary from an iterable such that the keys are the result of evaluating a key function on elements
     of the iterable and the values are lists of elements all of which correspond to the key.

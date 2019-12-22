@@ -1,30 +1,78 @@
 import ast
 import os
 import sys
-from collections import defaultdict, namedtuple, Counter
+from collections import defaultdict, Counter
 from textwrap import dedent
+from tokenize import TokenInfo
+from typing import (
+    Iterator, List, Tuple, Optional, NamedTuple,
+    Any, Iterable, Callable, Union
+)
+from types import FrameType, CodeType, TracebackType
+
+from typing import Mapping
 
 import executing
 from executing import only
 from pure_eval import Evaluator, is_expression_interesting
-
 from stack_data.utils import (
     truncate, unique_in_order, line_range,
     frame_and_lineno, iter_stack, collapse_repeated, group_by_key_func,
 )
 
+Range = NamedTuple('Range',
+                   [('start', int),
+                    ('end', int),
+                    ('data', Any)])
+
+Marker = NamedTuple('Marker',
+                    [('position', int),
+                     ('is_start', bool),
+                     ('string', str)])
+
+
+class Piece(NamedTuple('_Piece',
+                       [('start', int),
+                        ('end', int)])):
+    @property
+    def range(self) -> range:
+        return range(self.start, self.end)
+
+
+class Variable(
+    NamedTuple('_Variable',
+               [('name', str),
+                ('nodes', List[ast.AST]),
+                ('value', Any)])
+):
+    __hash__ = object.__hash__
+
 
 class Source(executing.Source):
+    """
+    The source code of a single file and associated metadata.
+
+    In addition to the attributes from the base class executing.Source,
+    if .tree is not None, meaning this is valid Python code, objects have:
+        - pieces: a list of Piece objects
+        - tokens_by_lineno: a defaultdict(list) mapping line numbers to lists of tokens.
+
+    Don't construct this class. Get an instance from frame_info.source.
+    """
+
     def __init__(self, *args, **kwargs):
         super(Source, self).__init__(*args, **kwargs)
         if self.tree:
             self.lines = self.text.split('\n')
-            self.pieces = list(self._clean_pieces())
-            self.tokens_by_lineno = group_by_key_func(self.asttokens().tokens, lambda tok: tok.start[0])
+            self.pieces = list(self._clean_pieces())  # type: List[Piece]
+            self.tokens_by_lineno = group_by_key_func(
+                self.asttokens().tokens,
+                lambda tok: tok.start[0],
+            )  # type: Mapping[int, List[TokenInfo]]
         else:
             self.lines = []
 
-    def _clean_pieces(self):
+    def _clean_pieces(self) -> Iterator[Piece]:
         pieces = self._raw_split_into_pieces(self.tree, 0, len(self.lines))
         pieces = [
             (start, end)
@@ -53,11 +101,19 @@ class Source(executing.Source):
             if start < end:
                 yield Piece(start, end)
 
-    def _raw_split_into_pieces(self, stmt, start, end):
+    def _raw_split_into_pieces(
+            self,
+            stmt: ast.AST,
+            start: int,
+            end: int,
+    ) -> Iterator[Tuple[int, int]]:
         self.asttokens()
 
         for name, body in ast.iter_fields(stmt):
-            if isinstance(body, list) and body and isinstance(body[0], (ast.stmt, ast.ExceptHandler)):
+            if (
+                    isinstance(body, list) and body and
+                    isinstance(body[0], (ast.stmt, ast.ExceptHandler))
+            ):
                 for rang, group in sorted(group_by_key_func(body, line_range).items()):
                     sub_stmt = group[0]
                     for inner_start, inner_end in self._raw_split_into_pieces(sub_stmt, *rang):
@@ -71,22 +127,22 @@ class Source(executing.Source):
 def cached_property(func):
     key = func.__name__
 
-    def wrapper(self, *args, **kwargs):
+    def cached_property_wrapper(self, *args, **kwargs):
         result = self._cache.get(key)
         if result is None:
             result = self._cache[key] = func(self, *args, **kwargs)
         return result
 
-    return property(wrapper)
+    return property(cached_property_wrapper)
 
 
 class Options:
     def __init__(
             self,
-            before=3,
-            after=1,
-            include_signature=False,
-            max_lines_per_piece=6,
+            before: int = 3,
+            after: int = 1,
+            include_signature: bool = False,
+            max_lines_per_piece: int = 6,
     ):
         self.before = before
         self.after = after
@@ -99,39 +155,39 @@ class Options:
         return "{}({})".format(type(self).__name__, ", ".join(items))
 
 
-class _LineGap(object):
+class LineGap(object):
     def __repr__(self):
         return "LINE_GAP"
 
 
-LINE_GAP = _LineGap()
+LINE_GAP = LineGap()
 
 
 class Line(object):
     def __init__(
             self,
-            frame_info,
-            lineno,
+            frame_info: 'FrameInfo',
+            lineno: int,
     ):
         self.frame_info = frame_info
         self.lineno = lineno
-        self.text = frame_info.source.lines[lineno - 1]
-        self.leading_indent = None
+        self.text = frame_info.source.lines[lineno - 1]  # type: str
+        self.leading_indent = None  # type: Optional[int]
 
     def __repr__(self):
         return "<{self.__class__.__name__} {self.lineno} (current={self.is_current}) " \
                "{self.text!r} of {self.frame_info.filename}>".format(self=self)
 
     @property
-    def is_current(self):
+    def is_current(self) -> bool:
         return self.lineno == self.frame_info.lineno
 
     @property
-    def tokens(self):
+    def tokens(self) -> List[TokenInfo]:
         return self.frame_info.source.tokens_by_lineno[self.lineno]
 
     @property
-    def token_ranges(self):
+    def token_ranges(self) -> List[Range]:
         return [
             Range(
                 token.start[1],
@@ -142,14 +198,14 @@ class Line(object):
         ]
 
     @property
-    def variable_ranges(self):
+    def variable_ranges(self) -> List[Range]:
         return [
             self.range_from_node(node, (variable, node))
             for variable, node in self.frame_info.variables_by_lineno[self.lineno]
         ]
 
     @property
-    def executing_node_ranges(self):
+    def executing_node_ranges(self) -> List[Range]:
         ex = self.frame_info.executing
         node = ex.node
         if node:
@@ -158,7 +214,7 @@ class Line(object):
                 return [rang]
         return []
 
-    def range_from_node(self, node, data):
+    def range_from_node(self, node: ast.AST, data: Any) -> Optional[Range]:
         start, end = line_range(node)
         end -= 1
         if not (start <= self.lineno <= end):
@@ -176,15 +232,19 @@ class Line(object):
         return Range(range_start, range_end, data)
 
     @property
-    def dedented_text(self):
+    def dedented_text(self) -> str:
         return self.text[self.leading_indent:]
 
-    def render_with_markers(self, markers, strip_leading_indent=True):
+    def render_with_markers(
+            self,
+            markers: Iterable[Marker],
+            strip_leading_indent: bool = True,
+    ) -> str:
         text = self.text
 
         # This just makes the loop below simpler
         # Don't use append or += to not mutate the input
-        markers = markers + [Marker(position=len(text), is_start=False, string='')]
+        markers = list(markers) + [Marker(position=len(text), is_start=False, string='')]
 
         markers.sort(key=lambda t: t[:2])
 
@@ -204,42 +264,35 @@ class Line(object):
         return ''.join(parts)
 
 
-Range = namedtuple('Range', 'start end data')
-Marker = namedtuple('Marker', 'position is_start string')
-
-
-class Piece(namedtuple('_Piece', 'start end')):
-    @property
-    def range(self):
-        return range(self.start, self.end)
-
-
-class Variable(namedtuple('_Variable', 'name nodes value')):
-    __hash__ = object.__hash__
-
-
-def markers_from_ranges(ranges, converter):
+def markers_from_ranges(
+        ranges: Iterable[Range],
+        converter: Callable[[Range], Optional[Tuple[str, str]]],
+) -> List[Marker]:
     markers = []
     for rang in ranges:
         converted = converter(rang)
         if converted is None:
             continue
 
+        start_string, end_string = converted
         markers += [
-            Marker(position=rang[0], is_start=True, string=converted[0]),
-            Marker(position=rang[1], is_start=False, string=converted[1]),
+            Marker(position=rang.start, is_start=True, string=start_string),
+            Marker(position=rang.end, is_start=False, string=end_string),
         ]
-
     return markers
 
 
 class RepeatedFrames:
-    def __init__(self, frames, frame_keys):
+    def __init__(
+            self,
+            frames: List[FrameType],
+            frame_keys: List[Tuple[CodeType, int]],
+    ):
         self.frames = frames
         self.frame_keys = frame_keys
 
     @property
-    def description(self):
+    def description(self) -> str:
         counts = sorted(Counter(self.frame_keys).items(),
                         key=lambda item: (-item[1], item[0][0].co_name))
         return ', '.join(
@@ -256,20 +309,28 @@ class RepeatedFrames:
 
 
 class FrameInfo(object):
-    def __init__(self, frame_or_tb, options=None):
+    def __init__(
+            self,
+            frame_or_tb: Union[FrameType, TracebackType],
+            options: Optional[Options] = None,
+    ):
         self.executing = Source.executing(frame_or_tb)
         frame, self.lineno = frame_and_lineno(frame_or_tb)
         self.frame = frame
         self.code = frame.f_code
-        self.options = options or Options()
+        self.options = options or Options()  # type: Options
         self._cache = {}
-        self.source = self.executing.source
+        self.source = self.executing.source  # type: Source
 
     def __repr__(self):
         return "{self.__class__.__name__}({self.frame})".format(self=self)
 
     @classmethod
-    def stack_data(cls, frame_or_tb, options=None):
+    def stack_data(
+            cls,
+            frame_or_tb: Union[FrameType, TracebackType],
+            options: Optional[Options] = None,
+    ) -> Iterator[Union['FrameInfo', RepeatedFrames]]:
         def _frame_key(x):
             frame, lineno = frame_and_lineno(x)
             return frame.f_code, lineno
@@ -282,7 +343,7 @@ class FrameInfo(object):
         )
 
     @cached_property
-    def scope_pieces(self):
+    def scope_pieces(self) -> List[Piece]:
         if not self.scope:
             return []
 
@@ -294,7 +355,7 @@ class FrameInfo(object):
         ]
 
     @cached_property
-    def filename(self):
+    def filename(self) -> str:
         result = self.code.co_filename
 
         if (
@@ -321,7 +382,7 @@ class FrameInfo(object):
         return result
 
     @cached_property
-    def executing_piece(self):
+    def executing_piece(self) -> Piece:
         return only(
             piece
             for piece in self.scope_pieces
@@ -329,7 +390,7 @@ class FrameInfo(object):
         )
 
     @cached_property
-    def included_pieces(self):
+    def included_pieces(self) -> List[Piece]:
         scope_pieces = self.scope_pieces
         if not self.scope_pieces:
             return []
@@ -350,7 +411,7 @@ class FrameInfo(object):
         return pieces
 
     @cached_property
-    def lines(self):
+    def lines(self) -> List[Union[Line, LineGap]]:
         pieces = self.included_pieces
         if not pieces:
             return []
@@ -367,7 +428,7 @@ class FrameInfo(object):
             lines = [
                 Line(self, i)
                 for i in piece.range
-            ]
+            ]  # type: List[Line]
             if piece != self.executing_piece:
                 lines = truncate(
                     lines,
@@ -394,7 +455,7 @@ class FrameInfo(object):
         return result
 
     @cached_property
-    def scope(self):
+    def scope(self) -> Optional[ast.AST]:
         if not self.source.tree or not self.executing.statements:
             return None
 
@@ -408,7 +469,7 @@ class FrameInfo(object):
                 return stmt
 
     @cached_property
-    def variables(self):
+    def variables(self) -> List[Variable]:
         if not self.scope:
             return []
 
@@ -451,7 +512,7 @@ class FrameInfo(object):
         return result
 
     @cached_property
-    def variables_by_lineno(self):
+    def variables_by_lineno(self) -> Mapping[int, List[Tuple[Variable, ast.AST]]]:
         result = defaultdict(list)
         for var in self.variables:
             for node in var.nodes:
@@ -460,7 +521,7 @@ class FrameInfo(object):
         return result
 
     @cached_property
-    def variables_in_lines(self):
+    def variables_in_lines(self) -> List[Variable]:
         return unique_in_order(
             var
             for line in self.lines
@@ -469,7 +530,7 @@ class FrameInfo(object):
         )
 
     @cached_property
-    def variables_in_executing_piece(self):
+    def variables_in_executing_piece(self) -> List[Variable]:
         return unique_in_order(
             var
             for lineno in self.executing_piece.range
