@@ -31,14 +31,6 @@ MarkerInLine = NamedTuple('MarkerInLine',
                            ('string', str)])
 
 
-class RangeOfLines(NamedTuple('RangeOfLines',
-                              [('start', int),
-                               ('end', int)])):
-    @property
-    def range(self) -> range:
-        return range(self.start, self.end)
-
-
 class Variable(
     NamedTuple('_Variable',
                [('name', str),
