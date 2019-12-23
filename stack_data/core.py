@@ -70,7 +70,7 @@ class Source(executing.Source):
             )  # type: Mapping[int, List[TokenInfo]]
 
     def _clean_pieces(self) -> Iterator[range]:
-        pieces = self._raw_split_into_pieces(self.tree, 1, len(self.lines))
+        pieces = self._raw_split_into_pieces(self.tree, 1, len(self.lines) + 1)
         pieces = [
             (start, end)
             for (start, end) in pieces
