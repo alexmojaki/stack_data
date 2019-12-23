@@ -349,6 +349,12 @@ def markers_from_ranges(
         ranges: Iterable[RangeInLine],
         converter: Callable[[RangeInLine], Optional[Tuple[str, str]]],
 ) -> List[MarkerInLine]:
+    """
+    Helper to create MarkerInLines given some RangeInLines.
+    converter should be a function accepting a RangeInLine returning
+    either None (which is ignored) or a pair of strings which
+    are used to create two markers included in the returned list.
+    """
     markers = []
     for rang in ranges:
         converted = converter(rang)
@@ -356,6 +362,9 @@ def markers_from_ranges(
             continue
 
         start_string, end_string = converted
+        if not isinstance(start_string, str) and isinstance(end_string, str):
+            raise TypeError("converter should return None or a pair of strings")
+
         markers += [
             MarkerInLine(position=rang.start, is_start=True, string=start_string),
             MarkerInLine(position=rang.end, is_start=False, string=end_string),
@@ -364,6 +373,18 @@ def markers_from_ranges(
 
 
 class RepeatedFrames:
+    """
+    A sequence of consecutive stack frames which shouldn't be displayed because
+    the same code and line number were repeated many times in the stack, e.g.
+    because of deep recursion.
+
+    Attributes:
+        - frames: list of raw stack frame objects
+        - frame_keys: list of tuples (frame.f_code, lineno) extracted from the frame objects.
+                        It's this information from the frames that is used to determine
+                        whether two frames should be considered similar (i.e. repeating).
+        - description: A string briefly describing frame_keys
+    """
     def __init__(
             self,
             frames: List[FrameType],
@@ -374,6 +395,10 @@ class RepeatedFrames:
 
     @property
     def description(self) -> str:
+        """
+        A string briefly describing the repeated frames, e.g.
+            my_function at line 10 (100 times)
+        """
         counts = sorted(Counter(self.frame_keys).items(),
                         key=lambda item: (-item[1], item[0][0].co_name))
         return ', '.join(
@@ -390,6 +415,40 @@ class RepeatedFrames:
 
 
 class FrameInfo(object):
+    """
+    Information about a frame!
+    Pass either a frame object or a traceback object,
+    and optionally an Options object to configure.
+
+    Or use the classmethod FrameInfo.stack_data() for an iterator of FrameInfo and
+    RepeatedFrames objects. 
+
+    Attributes:
+        - frame
+        - options
+        - code: frame.f_code
+        - source: a Source object
+        - filename: a hopefully absolute file path derived from code.co_filename
+        - scope: the AST node of the innermost function, class or module being executed
+        - lines: a list of Line/LineGap objects to display, determined by options
+        - executing: an Executing object from the `executing` library, which has:
+            - .node: the AST node being executed in this frame, or None if it's unknown
+            - .statements: a set of one or more candidate statements (AST nodes, probably just one)
+                currently being executed in this frame.
+            - .code_qualname(): the __qualname__ of the function or class being executed,
+                or just the code name.
+
+    Properties returning one or more pieces of source code (ranges of lines):
+        - scope_pieces: all the pieces in the scope
+        - included_pieces: a subset of scope_pieces determined by options
+        - executing_piece: the piece currently being executed in this frame
+
+    Properties returning lists of Variable objects:
+        - variables: all variables in the scope
+        - variables_by_lineno: variables organised into lines
+        - variables_in_lines: variables contained within FrameInfo.lines
+        - variables_in_executing_piece: variables contained within FrameInfo.executing_piece
+    """
     def __init__(
             self,
             frame_or_tb: Union[FrameType, TracebackType],
@@ -412,6 +471,14 @@ class FrameInfo(object):
             frame_or_tb: Union[FrameType, TracebackType],
             options: Optional[Options] = None,
     ) -> Iterator[Union['FrameInfo', RepeatedFrames]]:
+        """
+        An iterator of FrameInfo and RepeatedFrames objects representing
+        a full traceback or stack. Similar consecutive frames are collapsed into RepeatedFrames
+        objects, so always check what type of object has been yielded.
+
+        Pass either a frame object or a traceback object,
+        and optionally an Options object to configure.
+        """
         def _frame_key(x):
             frame, lineno = frame_and_lineno(x)
             return frame.f_code, lineno
@@ -425,6 +492,9 @@ class FrameInfo(object):
 
     @cached_property
     def scope_pieces(self) -> List[range]:
+        """
+        All the pieces (ranges of lines) contained in this object's .scope.
+        """
         if not self.scope:
             return []
 
@@ -437,13 +507,18 @@ class FrameInfo(object):
 
     @cached_property
     def filename(self) -> str:
+        """
+        A hopefully absolute file path derived from .code.co_filename,
+        the current working directory, and sys.path.
+        Code based on ipython.
+        """
         result = self.code.co_filename
 
         if (
                 os.path.isabs(result) or
                 (
-                        result.startswith(str("<")) and
-                        result.endswith(str(">"))
+                        result.startswith("<") and
+                        result.endswith(">")
                 )
         ):
             return result
@@ -465,6 +540,13 @@ class FrameInfo(object):
 
     @cached_property
     def executing_piece(self) -> range:
+        """
+        The piece (range of lines) containing the line currently being executed
+        by the interpreter in this frame.
+
+        Raises an exception if .scope is None, which usually means the source code
+        for this frame is unavailable.
+        """
         return only(
             piece
             for piece in self.scope_pieces
@@ -473,6 +555,15 @@ class FrameInfo(object):
 
     @cached_property
     def included_pieces(self) -> List[range]:
+        """
+        The list of pieces (ranges of lines) to display for this frame.
+        Consists of .executing_piece, surrounding context pieces
+        determined by .options.before and .options.after,
+        and the function signature if a function is being executed and
+        .options.include_signature is True (in which case this might not
+        be a contiguous range of pieces).
+        Always a subset of .scope_pieces.
+        """
         scope_pieces = self.scope_pieces
         if not self.scope_pieces:
             return []
@@ -494,6 +585,19 @@ class FrameInfo(object):
 
     @cached_property
     def lines(self) -> List[Union[Line, LineGap]]:
+        """
+        A list of lines to display, determined by options.
+        The objects yielded either have type Line or are the singleton LINE_GAP.
+        Always check the type that you're dealing with when iterating.
+
+        LINE_GAP can be created in two ways:
+            - by truncating a piece of context that's too long, determined by
+                .options.max_lines_per_piece
+            - immediately after the signature piece if Options.include_signature is true
+              and the following piece isn't already part of the included pieces.
+
+        The Line objects are all within the ranges from .included_pieces.
+        """
         pieces = self.included_pieces
         if not pieces:
             return []
@@ -538,6 +642,9 @@ class FrameInfo(object):
 
     @cached_property
     def scope(self) -> Optional[ast.AST]:
+        """
+        The AST node of the innermost function, class or module being executed.
+        """
         if not self.source.tree or not self.executing.statements:
             return None
 
@@ -552,6 +659,10 @@ class FrameInfo(object):
 
     @cached_property
     def variables(self) -> List[Variable]:
+        """
+        All Variable objects whose nodes are contained within .scope
+        and whose values could be safely evaluated by pure_eval.
+        """
         if not self.scope:
             return []
 
@@ -595,6 +706,12 @@ class FrameInfo(object):
 
     @cached_property
     def variables_by_lineno(self) -> Mapping[int, List[Tuple[Variable, ast.AST]]]:
+        """
+        A mapping from 1-based line numbers to lists of pairs:
+            - A Variable object
+            - A specific AST node from the variable's .nodes list that's
+                in the line at that line number.
+        """
         result = defaultdict(list)
         for var in self.variables:
             for node in var.nodes:
@@ -604,6 +721,9 @@ class FrameInfo(object):
 
     @cached_property
     def variables_in_lines(self) -> List[Variable]:
+        """
+        A list of Variable objects contained within the lines returned by .lines.
+        """
         return unique_in_order(
             var
             for line in self.lines
@@ -613,6 +733,10 @@ class FrameInfo(object):
 
     @cached_property
     def variables_in_executing_piece(self) -> List[Variable]:
+        """
+        A list of Variable objects contained within the lines
+        in the range returned by .executing_piece.
+        """
         return unique_in_order(
             var
             for lineno in self.executing_piece
