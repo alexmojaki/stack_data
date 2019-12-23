@@ -58,7 +58,7 @@ def render_frame_info(frame_info):
             result += '{:4} {} {}\n'.format(
                 line.lineno,
                 '>' if line.is_current else '|',
-                line.render_with_markers(markers)
+                line.render(markers)
             )
         else:
             assert line is LINE_GAP

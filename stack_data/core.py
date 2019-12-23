@@ -24,11 +24,26 @@ RangeInLine = NamedTuple('RangeInLine',
                          [('start', int),
                           ('end', int),
                           ('data', Any)])
+RangeInLine.__doc__ = """
+Represents a range of characters within one line of source code,
+and some associated data.
+
+Typically this will be converted to a pair of markers by markers_from_ranges.
+"""
 
 MarkerInLine = NamedTuple('MarkerInLine',
                           [('position', int),
                            ('is_start', bool),
                            ('string', str)])
+MarkerInLine.__doc__ = """
+A string that is meant to be inserted at a given position in a line of source code.
+For example, this could be an ANSI code or the opening or closing of an HTML tag.
+is_start should be True if this is the first of a pair such as the opening of an HTML tag.
+This will help to sort and insert markers correctly.
+
+Typically this would be created from a RangeInLine by markers_from_ranges.
+Then use Line.render to insert the markers correctly.
+"""
 
 
 class Variable(
@@ -37,6 +52,13 @@ class Variable(
                 ('nodes', List[ast.AST]),
                 ('value', Any)])
 ):
+    """
+    An expression that appears one or more times in source code and its associated value.
+    This will usually be a variable but it can be any expression evaluated by pure_eval.
+    - name is the source text of the expression.
+    - nodes is a list of equivalent nodes representing the same expression.
+    - value is the safely evaluated value of the expression.
+    """
     __hash__ = object.__hash__
     __eq__ = object.__eq__
 
@@ -127,6 +149,18 @@ def cached_property(func):
 
 
 class Options:
+    """
+    Configuration for FrameInfo, either in the constructor or the .stack_data classmethod.
+    These all determine which Lines and gaps are produced by FrameInfo.lines. 
+
+    before and after are the number of pieces of context to include in a frame
+    in addition to the executing piece.
+
+    include_signature is whether to include the function signature as a piece in a frame.
+
+    If a piece (other than the executing piece) has more than max_lines_per_piece lines,
+    it will be truncated with a gap in the middle. 
+    """
     def __init__(
             self,
             before: int = 3,
@@ -146,6 +180,15 @@ class Options:
 
 
 class LineGap(object):
+    """
+    A singleton representing one or more lines of source code that were skipped
+    in FrameInfo.lines.
+
+    LINE_GAP can be created in two ways:
+    - by truncating a piece of context that's too long.
+    - immediately after the signature piece if Options.include_signature is true
+      and the following piece isn't already part of the included pieces. 
+    """
     def __repr__(self):
         return "LINE_GAP"
 
@@ -154,6 +197,31 @@ LINE_GAP = LineGap()
 
 
 class Line(object):
+    """
+    A single line of source code for a particular stack frame.
+
+    Typically this is obtained from FrameInfo.lines.
+    Since that list may also contain LINE_GAP, you should first check
+    that this is really a Line before using it.
+
+    Attributes:
+        - frame_info
+        - lineno: the 1-based line number within the file
+        - text: the raw source of this line. For displaying text, see .render() instead.
+        - leading_indent: the number of leading spaces that should probably be stripped.
+            This attribute is set within FrameInfo.lines. If you construct this class
+            directly you should probably set it manually (at least to 0).
+        - is_current: whether this is the line currently being executed by the interpreter
+            within this frame.
+        - tokens: a list of source tokens in this line
+
+    There are several helpers for constructing RangeInLines which can be converted to markers
+    using markers_from_ranges which can be passed to .render():
+        - token_ranges
+        - variable_ranges
+        - executing_node_ranges
+        - range_from_node
+    """
     def __init__(
             self,
             frame_info: 'FrameInfo',
@@ -170,14 +238,24 @@ class Line(object):
 
     @property
     def is_current(self) -> bool:
+        """
+        Whether this is the line currently being executed by the interpreter
+        within this frame.
+        """
         return self.lineno == self.frame_info.lineno
 
     @property
     def tokens(self) -> List[TokenInfo]:
+        """
+        A list of source tokens in this line.
+        """
         return self.frame_info.source.tokens_by_lineno[self.lineno]
 
     @property
     def token_ranges(self) -> List[RangeInLine]:
+        """
+        A list of RangeInLines for each token in .tokens.
+        """
         return [
             RangeInLine(
                 token.start[1],
@@ -189,6 +267,9 @@ class Line(object):
 
     @property
     def variable_ranges(self) -> List[RangeInLine]:
+        """
+        A list of RangeInLines for each Variable that appears at least partially in this line.
+        """
         return [
             self.range_from_node(node, (variable, node))
             for variable, node in self.frame_info.variables_by_lineno[self.lineno]
@@ -196,6 +277,10 @@ class Line(object):
 
     @property
     def executing_node_ranges(self) -> List[RangeInLine]:
+        """
+        A list of one or zero RangeInLines for the executing node of this frame.
+        The list will have one element if the node can be found and it overlaps this line.
+        """
         ex = self.frame_info.executing
         node = ex.node
         if node:
@@ -205,6 +290,11 @@ class Line(object):
         return []
 
     def range_from_node(self, node: ast.AST, data: Any) -> Optional[RangeInLine]:
+        """
+        If the given node overlaps with this line, return a RangeInLine
+        with the correct start and end and the given data.
+        Otherwise, return None.
+        """
         start, end = line_range(node)
         end -= 1
         if not (start <= self.lineno <= end):
@@ -221,19 +311,20 @@ class Line(object):
 
         return RangeInLine(range_start, range_end, data)
 
-    @property
-    def dedented_text(self) -> str:
-        return self.text[self.leading_indent:]
-
-    def render_with_markers(
+    def render(
             self,
-            markers: Iterable[MarkerInLine],
+            markers: Iterable[MarkerInLine] = (),
             strip_leading_indent: bool = True,
     ) -> str:
+        """
+        Produces a string for display consisting of .text
+        with the .strings of each marker inserted at the correct positions.
+        If strip_leading_indent is true (the default) then leading spaces
+        common to all lines in this frame will be excluded.
+        """
         text = self.text
 
         # This just makes the loop below simpler
-        # Don't use append or += to not mutate the input
         markers = list(markers) + [MarkerInLine(position=len(text), is_start=False, string='')]
 
         markers.sort(key=lambda t: t[:2])

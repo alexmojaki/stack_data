@@ -29,7 +29,7 @@ def print_stack():
                     markers_from_ranges(line.variable_ranges, convert_variable_range) +
                     markers_from_ranges(line.token_ranges, convert_token_range)
             )
-            print('{:4} | {}'.format(line.lineno, line.render_with_markers(markers)))
+            print('{:4} | {}'.format(line.lineno, line.render(markers)))
         else:
             assert line is LINE_GAP
             print('(...)')

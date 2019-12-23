@@ -21,7 +21,7 @@ def test_lines_with_gaps():
     def gather_lines():
         frame_info = FrameInfo(inspect.currentframe().f_back, options)
         lines[:] = [
-            (line.dedented_text if dedented else line.text)
+            line.render(strip_leading_indent=dedented)
             if isinstance(line, Line) else line
             for line in frame_info.lines
         ]
@@ -156,9 +156,9 @@ def test_markers():
             return '[[', ']]'
 
     markers = markers_from_ranges(line.token_ranges, convert_token_range)
-    assert line.render_with_markers(markers) == \
+    assert line.render(markers) == \
            '[[line]] = [[only]]([[FrameInfo]]([[inspect]].[[currentframe]](), [[options]]).[[lines]])'
-    assert line.render_with_markers(markers, strip_leading_indent=False) == \
+    assert line.render(markers, strip_leading_indent=False) == \
            '    [[line]] = [[only]]([[FrameInfo]]([[inspect]].[[currentframe]](), [[options]]).[[lines]])'
 
     def convert_variable_range(r):
@@ -171,7 +171,7 @@ def test_markers():
         (50, True, '[['),
         (57, False, ' of type Options]]'),
     ]
-    assert line.render_with_markers(markers) == \
+    assert line.render(markers) == \
            '[[line of type Line]] = only(FrameInfo(inspect.currentframe(), [[options of type Options]]).lines)'
 
 
