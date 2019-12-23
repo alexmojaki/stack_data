@@ -77,12 +77,22 @@ class Source(executing.Source):
 
     def __init__(self, *args, **kwargs):
         super(Source, self).__init__(*args, **kwargs)
-        if self.tree:
-            self.pieces = list(self._clean_pieces())  # type: List[range]
-            self.tokens_by_lineno = group_by_key_func(
-                self.asttokens().tokens,
-                lambda tok: tok.start[0],
-            )  # type: Mapping[int, List[TokenInfo]]
+        self.asttokens()
+
+    @cached_property
+    def pieces(self) -> List[range]:
+        if not self.tree:
+            raise AttributeError("This file doesn't contain valid Python, so .pieces doesn't exist")
+        return list(self._clean_pieces())
+
+    @cached_property
+    def tokens_by_lineno(self) -> Mapping[int, List[TokenInfo]]:
+        if not self.tree:
+            raise AttributeError("This file doesn't contain valid Python, so .tokens_by_lineno doesn't exist")
+        return group_by_key_func(
+            self.asttokens().tokens,
+            lambda tok: tok.start[0],
+        )
 
     def _clean_pieces(self) -> Iterator[range]:
         pieces = self._raw_split_into_pieces(self.tree, 1, len(self.lines) + 1)
@@ -239,7 +249,7 @@ class Line(object):
         """
         return self.frame_info.source.tokens_by_lineno[self.lineno]
 
-    @property
+    @cached_property
     def token_ranges(self) -> List[RangeInLine]:
         """
         A list of RangeInLines for each token in .tokens.
@@ -253,7 +263,7 @@ class Line(object):
             for token in self.tokens
         ]
 
-    @property
+    @cached_property
     def variable_ranges(self) -> List[RangeInLine]:
         """
         A list of RangeInLines for each Variable that appears at least partially in this line.
@@ -263,7 +273,7 @@ class Line(object):
             for variable, node in self.frame_info.variables_by_lineno[self.lineno]
         ]
 
-    @property
+    @cached_property
     def executing_node_ranges(self) -> List[RangeInLine]:
         """
         A list of one or zero RangeInLines for the executing node of this frame.
@@ -381,7 +391,7 @@ class RepeatedFrames:
         self.frames = frames
         self.frame_keys = frame_keys
 
-    @property
+    @cached_property
     def description(self) -> str:
         """
         A string briefly describing the repeated frames, e.g.
@@ -412,7 +422,7 @@ class FrameInfo(object):
     RepeatedFrames objects. 
 
     Attributes:
-        - frame
+        - frame: an actual stack frame object, either frame_or_tb or frame_or_tb.tb_frame
         - options
         - code: frame.f_code
         - source: a Source object
