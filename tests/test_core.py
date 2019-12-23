@@ -195,7 +195,6 @@ def test_variables():
     assert sum(line.is_current for line in frame_info.lines) == 1
 
     body = frame_info.scope.body
-    variables = sorted(frame_info.variables)
 
     tup = body[-1].value.value.elts
     call = tup[0]
@@ -204,7 +203,7 @@ def test_variables():
     assert frame_info.filename.endswith(frame_info.code.co_filename)
     assert frame_info.filename.endswith("test_core.py")
     assert os.path.isabs(frame_info.filename)
-    assert variables == [
+    expected_variables = [
         Variable(
             name='arg',
             nodes=(
@@ -236,6 +235,9 @@ def test_variables():
             value=123986,
         ),
     ]
+    expected_variables = [tuple(v) for v in expected_variables]
+    variables = [tuple(v) for v in sorted(frame_info.variables)]
+    assert expected_variables == variables
 
     assert (
             sorted(frame_info.variables_in_executing_piece) ==

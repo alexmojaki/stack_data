@@ -38,6 +38,7 @@ class Variable(
                 ('value', Any)])
 ):
     __hash__ = object.__hash__
+    __eq__ = object.__eq__
 
 
 class Source(executing.Source):
