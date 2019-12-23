@@ -18,7 +18,7 @@ from pure_eval import Evaluator, is_expression_interesting
 from stack_data.utils import (
     truncate, unique_in_order, line_range,
     frame_and_lineno, iter_stack, collapse_repeated, group_by_key_func,
-)
+    cached_property)
 
 RangeInLine = NamedTuple('RangeInLine',
                          [('start', int),
@@ -134,18 +134,6 @@ class Source(executing.Source):
                         start = inner_end
 
         yield start, end
-
-
-def cached_property(func):
-    key = func.__name__
-
-    def cached_property_wrapper(self, *args, **kwargs):
-        result = self._cache.get(key)
-        if result is None:
-            result = self._cache[key] = func(self, *args, **kwargs)
-        return result
-
-    return property(cached_property_wrapper)
 
 
 class Options:
@@ -459,7 +447,6 @@ class FrameInfo(object):
         self.frame = frame
         self.code = frame.f_code
         self.options = options or Options()  # type: Options
-        self._cache = {}
         self.source = self.executing.source  # type: Source
 
     def __repr__(self):
