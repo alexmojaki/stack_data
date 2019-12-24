@@ -80,7 +80,7 @@ def collapse_repeated(lst, *, collapser, mapper=identity, key=identity):
             yield from map(mapper, original_group)
         else:
             keyed_group, _ = zip(*highlighted_group)
-            yield collapser(original_group, keyed_group)
+            yield collapser(list(original_group), list(keyed_group))
 
 
 def is_frame(frame_or_tb: Union[FrameType, TracebackType]) -> bool:

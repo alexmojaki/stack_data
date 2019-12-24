@@ -383,7 +383,7 @@ class RepeatedFrames:
     because of deep recursion.
 
     Attributes:
-        - frames: list of raw stack frame objects
+        - frames: list of raw frame or traceback objects
         - frame_keys: list of tuples (frame.f_code, lineno) extracted from the frame objects.
                         It's this information from the frames that is used to determine
                         whether two frames should be considered similar (i.e. repeating).
@@ -391,7 +391,7 @@ class RepeatedFrames:
     """
     def __init__(
             self,
-            frames: List[FrameType],
+            frames: List[Union[FrameType, TracebackType]],
             frame_keys: List[Tuple[CodeType, int]],
     ):
         self.frames = frames
