@@ -142,3 +142,20 @@ class cached_property(object):
         return value
 
     __get__ = cached_property_wrapper
+
+
+def _pygmented_with_ranges(formatter, code, ranges):
+    import pygments
+    from pygments.lexers import get_lexer_by_name
+
+    class MyLexer(type(get_lexer_by_name("python3"))):
+        def get_tokens(self, text):
+            length = 0
+            for ttype, value in super().get_tokens(text):
+                if any(start <= length < end for start, end in ranges):
+                    ttype = ttype.ExecutingNode
+                length += len(value)
+                yield ttype, value
+
+    lexer = MyLexer(stripnl=False)
+    return pygments.highlight(code, lexer, formatter).splitlines()

@@ -18,7 +18,7 @@ from pure_eval import Evaluator, is_expression_interesting
 from stack_data.utils import (
     truncate, unique_in_order, line_range,
     frame_and_lineno, iter_stack, collapse_repeated, group_by_key_func,
-    cached_property, is_frame)
+    cached_property, is_frame, _pygmented_with_ranges)
 
 RangeInLine = NamedTuple('RangeInLine',
                          [('start', int),
@@ -709,9 +709,6 @@ class FrameInfo(object):
 
     @cached_property
     def _pygmented_scope_lines(self) -> Optional[Tuple[int, List[str]]]:
-        import pygments
-        # noinspection PyUnresolvedReferences
-        from pygments.lexers import Python3Lexer
         # noinspection PyUnresolvedReferences
         from pygments.formatters import HtmlFormatter
 
@@ -730,22 +727,12 @@ class FrameInfo(object):
             start, end = atok.get_text_range(node)
             start -= scope_start
             end -= scope_start
-
-            class MyLexer(Python3Lexer):
-                def get_tokens(self, text):
-                    length = 0
-                    for ttype, value in super().get_tokens(text):
-                        if start <= length < end:
-                            ttype = ttype.ExecutingNode
-                        length += len(value)
-                        yield ttype, value
-
-            lexer = MyLexer(stripnl=False)
+            ranges = [(start, end)]
         else:
-            lexer = Python3Lexer(stripnl=False)
+            ranges = []
 
         code = atok.get_text(scope)
-        lines = pygments.highlight(code, lexer, formatter).splitlines()
+        lines = _pygmented_with_ranges(formatter, code, ranges)
 
         start_line = line_range(scope)[0]
 
