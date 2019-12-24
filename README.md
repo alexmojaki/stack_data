@@ -196,3 +196,93 @@ The output doesn't change much, except you can see jumps in the line numbers:
 -->   15 |         print_stack()
       17 |         for j in range(5):
 ```
+
+## Variables
+
+You can also inspect variables and other expressions in a frame, e.g:
+
+```python
+    for var in frame_info.variables:
+        print(f"{var.name} = {repr(var.value)}")
+```
+
+which may output:
+
+```python
+result = [[0, 0, 0, 0, 0], [0, 1, 2, 3, 4], [0, 2, 4, 6, 8], [0, 3, 6, 9, 12], []]
+i = 4
+row = []
+j = 4
+```
+
+`frame_info.variables` returns a list of `Variable` objects, which have attributes `name`, `value`, and `nodes`, which is a list of all AST representing that expression.
+
+A `Variable` may refer to an expression other than a simple variable name. It can be any expression evaluated by the library [`pure_eval`](https://github.com/alexmojaki/pure_eval) which it deems 'interesting' (see those docs for more info). This includes expressions like `foo.bar` or `foo[bar]`. In these cases `name` is the source code of that expression. `pure_eval` ensures that it only evaluates expressions that won't have any side effects, e.g. where `foo.bar` is a normal attribute rather than a descriptor such as a property.
+
+`frame_info.variables` is a list of all the interesting expressions found in `frame_info.scope`, e.g. the current function, which may include expressions not visible in `frame_info.lines`. You can restrict the list by using `frame_info.variables_in_lines` or even `frame_info.variables_in_executing_piece`. For more control you can use `frame_info.variables_by_lineno`. See the docstrings for more information.
+
+## Rendering lines with ranges and markers
+
+Sometimes you may want to insert special characters into the text for display purposes, e.g. HTML or ANSI color codes. `stack_data` provides a few tools to make this easier.
+
+Let's say we have a `Line` object where `line.text` (the original raw source code of that line) is `"foo = bar"`, so `line.text[6:9]` is `"bar"`, and we want to emphasise that part by inserting HTML at positions 6 and 9 in the text. Here's how we can do that directly:
+
+```python
+markers = [
+    stack_data.MarkerInLine(position=6, is_start=True, string="<b>"),
+    stack_data.MarkerInLine(position=9, is_start=False, string="</b>"),
+]
+line.render(markers)  # returns "foo = <b>bar</b>"
+```
+
+Here `is_start=True` indicates that the marker is the first of a pair. This helps `line.render()` sort and insert the markers correctly so you don't end up with malformed HTML like `foo<b>.<i></b>bar</i>` where tags overlap.
+
+Usually though you wouldn't create markers directly yourself. Instead you would start with one or more ranges and then convert them, like so:
+
+```python
+ranges = [
+    stack_data.RangeInLine(start=0, end=3, data="foo"),
+    stack_data.RangeInLine(start=6, end=9, data="bar"),
+]
+
+def convert_ranges(r):
+    if r.data == "bar":
+        return "<b>", "</b>"        
+
+# This results in `markers` being the same as in the above example.
+markers = stack_data.markers_from_ranges(ranges, convert_ranges)
+```
+
+`RangeInLine` has a `data` attribute which can be any object. `markers_from_ranges` accepts a converter function to which it passes all the `RangeInLine` objects. If the converter function returns a pair of strings, it creates two markers from them. Otherwise it should return `None` to indicate that the range should be ignored, as with the first range containing `"foo"` in this example.
+
+The reason this is useful is because there are built in tools to create these ranges for you. For example, if we change our `print_stack()` function to contain this:
+
+```python
+def convert_variable_ranges(r):
+    variable, _node = r.data
+    return f'<span data-value="{repr(variable.value)}">', '</span>'
+
+markers = stack_data.markers_from_ranges(line.variable_ranges, convert_variable_ranges)
+print(f"{'-->' if line.is_current else '   '} {line.lineno:4} | {line.render(markers)}")
+```
+
+Then the output becomes:
+
+```
+foo at line 15
+-----------
+       9 | def foo():
+       (...)
+      11 |     for <span data-value="4">i</span> in range(5):
+      12 |         <span data-value="[]">row</span> = []
+      14 |         <span data-value="[[0, 0, 0, 0, 0], [0, 1, 2, 3, 4], [0, 2, 4, 6, 8], [0, 3, 6, 9, 12], []]">result</span>.append(<span data-value="[]">row</span>)
+-->   15 |         print_stack()
+      17 |         for <span data-value="4">j</span> in range(5):
+```
+
+`line.variable_ranges` is a list of RangeInLines for each Variable that appears at least partially in this line. The data attribute of the range is a pair `(variable, node)` where node is the particular AST node from the list `variable.nodes` that corresponds to this range.
+
+You can also use `line.token_ranges` (e.g. if you want to do your own syntax highlighting) or `line.executing_node_ranges` if you want to highlight the currently executing node identified by the [`executing`](https://github.com/alexmojaki/executing) library. Or if you want to make your own range from an AST node, use `line.range_from_node(node, data)`. See the docstrings for more info.
+
+
+

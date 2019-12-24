@@ -4,15 +4,15 @@ import sys
 from collections import defaultdict, Counter
 from textwrap import dedent
 from tokenize import TokenInfo
+from types import FrameType, CodeType, TracebackType
 from typing import (
     Iterator, List, Tuple, Optional, NamedTuple,
     Any, Iterable, Callable, Union
 )
-from types import FrameType, CodeType, TracebackType
-
 from typing import Mapping
 
 import executing
+from asttokens.util import Token
 from executing import only
 from pure_eval import Evaluator, is_expression_interesting
 from stack_data.utils import (
@@ -243,16 +243,20 @@ class Line(object):
         return self.lineno == self.frame_info.lineno
 
     @property
-    def tokens(self) -> List[TokenInfo]:
+    def tokens(self) -> List[Token]:
         """
         A list of source tokens in this line.
+        The tokens are Token objects from asttokens:
+        https://asttokens.readthedocs.io/en/latest/api-index.html#asttokens.util.Token
         """
         return self.frame_info.source.tokens_by_lineno[self.lineno]
 
     @cached_property
     def token_ranges(self) -> List[RangeInLine]:
         """
-        A list of RangeInLines for each token in .tokens.
+        A list of RangeInLines for each token in .tokens,
+        where range.data is a Token object from asttokens:
+        https://asttokens.readthedocs.io/en/latest/api-index.html#asttokens.util.Token
         """
         return [
             RangeInLine(
@@ -267,6 +271,8 @@ class Line(object):
     def variable_ranges(self) -> List[RangeInLine]:
         """
         A list of RangeInLines for each Variable that appears at least partially in this line.
+        The data attribute of the range is a pair (variable, node) where node is the particular
+        AST node from the list variable.nodes that corresponds to this range.
         """
         return [
             self.range_from_node(node, (variable, node))
