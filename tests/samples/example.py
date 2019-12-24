@@ -31,7 +31,7 @@ def print_stack():
     result = ""
     options = Options(include_signature=True)
     frame = inspect.currentframe().f_back
-    for frame_info in list(FrameInfo.stack_data(frame, options))[:3][::-1]:
+    for frame_info in list(FrameInfo.stack_data(frame, options))[-3:]:
         result += render_frame_info(frame_info) + "\n"
     return result
 

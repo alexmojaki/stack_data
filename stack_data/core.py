@@ -18,7 +18,7 @@ from pure_eval import Evaluator, is_expression_interesting
 from stack_data.utils import (
     truncate, unique_in_order, line_range,
     frame_and_lineno, iter_stack, collapse_repeated, group_by_key_func,
-    cached_property)
+    cached_property, is_frame)
 
 RangeInLine = NamedTuple('RangeInLine',
                          [('start', int),
@@ -486,8 +486,16 @@ class FrameInfo(object):
             frame, lineno = frame_and_lineno(x)
             return frame.f_code, lineno
 
+        stack = list(iter_stack(frame_or_tb))
+
+        # Reverse the stack from a frame so that it's in the same order
+        # as the order from a traceback, which is the order of a printed
+        # traceback when read top to bottom (most recent call last)
+        if is_frame(frame_or_tb):
+            stack = stack[::-1]
+
         yield from collapse_repeated(
-            list(iter_stack(frame_or_tb)),
+            stack,
             mapper=lambda f: cls(f, options),
             collapser=RepeatedFrames,
             key=_frame_key,
