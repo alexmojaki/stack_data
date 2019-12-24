@@ -503,6 +503,8 @@ class FrameInfo(object):
             cls,
             frame_or_tb: Union[FrameType, TracebackType],
             options: Optional[Options] = None,
+            *,
+            collapse_repeated_frames: bool = True,
     ) -> Iterator[Union['FrameInfo', RepeatedFrames]]:
         """
         An iterator of FrameInfo and RepeatedFrames objects representing
@@ -512,10 +514,6 @@ class FrameInfo(object):
         Pass either a frame object or a traceback object,
         and optionally an Options object to configure.
         """
-        def _frame_key(x):
-            frame, lineno = frame_and_lineno(x)
-            return frame.f_code, lineno
-
         stack = list(iter_stack(frame_or_tb))
 
         # Reverse the stack from a frame so that it's in the same order
@@ -524,9 +522,20 @@ class FrameInfo(object):
         if is_frame(frame_or_tb):
             stack = stack[::-1]
 
+        def mapper(f):
+            return cls(f, options)
+
+        if not collapse_repeated_frames:
+            yield from map(mapper, stack)
+            return
+
+        def _frame_key(x):
+            frame, lineno = frame_and_lineno(x)
+            return frame.f_code, lineno
+
         yield from collapse_repeated(
             stack,
-            mapper=lambda f: cls(f, options),
+            mapper=mapper,
             collapser=RepeatedFrames,
             key=_frame_key,
         )
