@@ -165,11 +165,13 @@ class Options:
             after: int = 1,
             include_signature: bool = False,
             max_lines_per_piece: int = 6,
+            pygments_formatter=None,
     ):
         self.before = before
         self.after = after
         self.include_signature = include_signature
         self.max_lines_per_piece = max_lines_per_piece
+        self.pygments_formatter = pygments_formatter
 
     def __repr__(self):
         keys = sorted(self.__dict__)
@@ -319,6 +321,7 @@ class Line(object):
             self,
             markers: Iterable[MarkerInLine] = (),
             strip_leading_indent: bool = True,
+            pygmented: bool = False,
     ) -> str:
         """
         Produces a string for display consisting of .text
@@ -326,6 +329,14 @@ class Line(object):
         If strip_leading_indent is true (the default) then leading spaces
         common to all lines in this frame will be excluded.
         """
+        if pygmented:
+            assert not markers, "Cannot use pygmented with markers"
+            start_line, lines = self.frame_info._pygmented_scope_lines
+            result = lines[self.lineno - start_line]
+            if strip_leading_indent:
+                result = result.replace(self.text[:self.leading_indent], "", 1)
+            return result
+
         text = self.text
 
         # This just makes the loop below simpler
@@ -374,6 +385,25 @@ def markers_from_ranges(
             MarkerInLine(position=rang.end, is_start=False, string=end_string),
         ]
     return markers
+
+
+def style_with_executing_node(style, modifier):
+    from pygments.styles import get_style_by_name
+    if isinstance(style, str):
+        style = get_style_by_name(style)
+
+    class NewStyle(style):
+        for_executing_node = True
+
+        styles = {
+            **style.styles,
+            **{
+                k.ExecutingNode: v + " " + modifier
+                for k, v in style.styles.items()
+            }
+        }
+
+    return NewStyle
 
 
 class RepeatedFrames:
@@ -667,6 +697,50 @@ class FrameInfo(object):
             stmt = stmt.parent
             if isinstance(stmt, (ast.FunctionDef, ast.ClassDef, ast.Module)):
                 return stmt
+
+    @cached_property
+    def _pygmented_scope_lines(self) -> Optional[Tuple[int, List[str]]]:
+        import pygments
+        # noinspection PyUnresolvedReferences
+        from pygments.lexers import Python3Lexer
+        # noinspection PyUnresolvedReferences
+        from pygments.formatters import HtmlFormatter
+
+        formatter = self.options.pygments_formatter
+        scope = self.scope
+        if not (scope and formatter):
+            return None
+
+        if isinstance(formatter, HtmlFormatter):
+            formatter.nowrap = True
+
+        atok = self.source.asttokens()
+        node = self.executing.node
+        if node and getattr(formatter.style, "for_executing_node", False):
+            scope_start = atok.get_text_range(scope)[0]
+            start, end = atok.get_text_range(node)
+            start -= scope_start
+            end -= scope_start
+
+            class MyLexer(Python3Lexer):
+                def get_tokens(self, text):
+                    length = 0
+                    for ttype, value in super().get_tokens(text):
+                        if start <= length < end:
+                            ttype = ttype.ExecutingNode
+                        length += len(value)
+                        yield ttype, value
+
+            lexer = MyLexer(stripnl=False)
+        else:
+            lexer = Python3Lexer(stripnl=False)
+
+        code = atok.get_text(scope)
+        lines = pygments.highlight(code, lexer, formatter).splitlines()
+
+        start_line = line_range(scope)[0]
+
+        return start_line, lines
 
     @cached_property
     def variables(self) -> List[Variable]:

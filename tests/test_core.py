@@ -7,8 +7,10 @@ import token
 from itertools import islice
 from pathlib import Path
 
+import pygments
 from executing import only
-
+# noinspection PyUnresolvedReferences
+from pygments.lexers import Python3Lexer
 from stack_data import Options, Line, LINE_GAP, markers_from_ranges, Variable
 from stack_data import Source, FrameInfo
 from stack_data.utils import line_range
@@ -141,9 +143,12 @@ def test_markers():
     options = Options(before=0, after=0)
     line = only(FrameInfo(inspect.currentframe(), options).lines)
     assert line.is_current
-    assert repr(line).startswith(
-        "<Line 142 (current=True) "
-        "'    line = only(FrameInfo(inspect.currentframe(), options).lines)' of "
+    assert re.match(r"<Line \d+ ", repr(line))
+    assert (
+            " (current=True) "
+            "'    line = only(FrameInfo(inspect.currentframe(), options).lines)'"
+            " of "
+            in repr(line)
     )
     assert repr(line).endswith("test_core.py>")
     assert repr(LINE_GAP) == "LINE_GAP"
@@ -177,7 +182,8 @@ def test_markers():
 
 def test_variables():
     options = Options(before=1, after=0)
-    assert repr(options) == 'Options(after=0, before=1, include_signature=False, max_lines_per_piece=6)'
+    assert repr(options) == 'Options(after=0, before=1, include_signature=False, ' \
+                            'max_lines_per_piece=6, pygments_formatter=None)'
 
     def foo(arg):
         y = 123986
@@ -386,6 +392,7 @@ def test_sys_modules():
 
     for source in modules:
         check_pieces(source)
+        check_pygments_tokens(source)
 
 
 def check_pieces(source):
@@ -418,6 +425,12 @@ def check_pieces(source):
 
     for lineno in blank_linenos:
         assert not source.lines[lineno - 1].strip(), lineno
+
+
+def check_pygments_tokens(source):
+    lexer = Python3Lexer(stripnl=False)
+    pygments_tokens = [value for ttype, value in pygments.lex(source.text, lexer)]
+    assert ''.join(pygments_tokens) == source.text
 
 
 def test_example():
