@@ -28,6 +28,7 @@ install_requires = [
 
 tests_require = [
     'pytest',
+    'typeguard',
 ]
 
 setup(
