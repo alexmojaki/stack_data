@@ -504,7 +504,7 @@ class FrameInfo(object):
             frame_or_tb: Union[FrameType, TracebackType],
             options: Optional[Options] = None,
             *,
-            collapse_repeated_frames: bool = True,
+            collapse_repeated_frames: bool = True
     ) -> Iterator[Union['FrameInfo', RepeatedFrames]]:
         """
         An iterator of FrameInfo and RepeatedFrames objects representing
