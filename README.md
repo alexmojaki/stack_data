@@ -44,7 +44,7 @@ def print_stack():
 
 The output of one call to `print_stack()` looks like:
 
-```python
+```
 foo at line 9
 -----------
        6 | for i in range(5):
@@ -65,7 +65,7 @@ frame_info = stack_data.FrameInfo(frame, options)
 
 Then the output looks like:
 
-```python
+```
 foo at line 9
 -----------
        8 | result.append(row)
@@ -93,7 +93,7 @@ def foo():
 
 and then run the original code with the default options, then the output is:
 
-```python
+```
 foo at line 11
 -----------
        6 | for i in range(5):
@@ -133,7 +133,7 @@ However, if a piece is very long, including all of it could be cumbersome. For t
 
 Now the output looks like:
 
-```python
+```
 foo at line 15
 -----------
        6 | for i in range(5):
@@ -154,7 +154,7 @@ Note that the executing piece, i.e. the piece containing the current line being 
 
 The lines of context never stray outside `frame_info.scope`, which is the innermost function or class definition containing the current line. For example, this is the output for a short function which has neither 3 lines before nor 1 line after the current line:
 
-```python
+```
 bar at line 6
 -----------
        4 | def bar():
@@ -164,7 +164,7 @@ bar at line 6
 
 Sometimes it's nice to ensure that the function signature is always showing. This can be done with `Options(include_signature=True)`. The result looks like this:
 
-```python
+```
 foo at line 14
 -----------
        9 | def foo():
@@ -191,7 +191,7 @@ To avoid wasting space, pieces never start or end with a blank line, and blank l
 
 The output doesn't change much, except you can see jumps in the line numbers:
 
-```python
+```
       11 |     for i in range(5):
       12 |         row = []
       14 |         result.append(row)
@@ -296,7 +296,7 @@ for frame_info in FrameInfo.stack_data(frame, options):
 
 Now the output looks something like this:
 
-```python
+```
 <module> at line 18
 -----------
       14 |         for j in range(5):
@@ -354,7 +354,7 @@ def print_stack():
 
 And the output:
 
-```python
+```
 <module> at line 9
 -----------
        4 | def factorial(x):
