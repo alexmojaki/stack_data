@@ -22,7 +22,9 @@ def test_lines_with_gaps():
     dedented = False
 
     def gather_lines():
-        frame_info = FrameInfo(inspect.currentframe().f_back, options)
+        frame = inspect.currentframe().f_back
+        frame_info = FrameInfo(frame, options)
+        assert repr(frame_info) == "FrameInfo({})".format(frame)
         lines[:] = [
             line.render(strip_leading_indent=dedented)
             if isinstance(line, Line) else line
