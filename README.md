@@ -401,3 +401,5 @@ x = -993
 ```
 
 In addition to handling repeated frames, we've passed a traceback object to `FrameInfo.stack_data` instead of a frame.
+
+If you want, you can pass `collapse_repeated_frames=False` to `FrameInfo.stack_data` (not to `Options`) and it will just yield `FrameInfo` objects for the full stack.
