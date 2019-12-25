@@ -160,7 +160,7 @@ class Options:
     it will be truncated with a gap in the middle. 
     """
     def __init__(
-            self,
+            self, *,
             before: int = 3,
             after: int = 1,
             include_signature: bool = False,
