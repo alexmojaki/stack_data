@@ -42,6 +42,7 @@ setup(
     author='Alex Hall',
     author_email='alex.mojaki@gmail.com',
     license='MIT',
+    include_package_data=True,
     packages=[package],
     install_requires=install_requires,
     tests_require=tests_require,
