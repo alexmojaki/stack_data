@@ -754,7 +754,7 @@ class FrameInfo(object):
             pair
             for pair in evaluator.find_expressions(scope)
             if is_expression_interesting(*pair)
-        ]
+        ]  # type: List[Tuple[ast.AST, Any]]
 
         if isinstance(scope, ast.FunctionDef):
             for node in ast.walk(scope.args):

@@ -475,3 +475,91 @@ lst = [1, 1, 1]
 x = 1 
 
 """
+
+
+def test_pygments_example():
+    from .samples.pygments_example import bar
+    result = bar()
+    print(result)
+    assert result == """\
+Terminal256Formatter native:
+
+   9 | \x1b[38;5;70;01mdef\x1b[39;00m\x1b[38;5;252m \x1b[39m\x1b[38;5;68mbar\x1b[39m\x1b[38;5;252m(\x1b[39m\x1b[38;5;252m)\x1b[39m\x1b[38;5;252m:\x1b[39m
+  10 | \x1b[38;5;252m    \x1b[39m\x1b[38;5;252mx\x1b[39m\x1b[38;5;252m \x1b[39m\x1b[38;5;252m=\x1b[39m\x1b[38;5;252m \x1b[39m\x1b[38;5;67m1\x1b[39m
+  11 | \x1b[38;5;252m    \x1b[39m\x1b[38;5;31mstr\x1b[39m\x1b[38;5;252m(\x1b[39m\x1b[38;5;252mx\x1b[39m\x1b[38;5;252m)\x1b[39m
+  12 > \x1b[38;5;252m    \x1b[39m\x1b[38;5;252mresult\x1b[39m\x1b[38;5;252m \x1b[39m\x1b[38;5;252m=\x1b[39m\x1b[38;5;252m \x1b[39m\x1b[38;5;252mprint_stack\x1b[39m\x1b[38;5;252m(\x1b[39m\x1b[38;5;252m)\x1b[39m
+  13 | \x1b[38;5;252m    \x1b[39m\x1b[38;5;70;01mreturn\x1b[39;00m\x1b[38;5;252m \x1b[39m\x1b[38;5;252mresult\x1b[39m
+
+====================
+
+Terminal256Formatter <class \'stack_data.core.style_with_executing_node.<locals>.NewStyle\'>:
+
+   9 | \x1b[38;5;70;01mdef\x1b[39;00m\x1b[38;5;252m \x1b[39m\x1b[38;5;68mbar\x1b[39m\x1b[38;5;252m(\x1b[39m\x1b[38;5;252m)\x1b[39m\x1b[38;5;252m:\x1b[39m
+  10 | \x1b[38;5;252m    \x1b[39m\x1b[38;5;252mx\x1b[39m\x1b[38;5;252m \x1b[39m\x1b[38;5;252m=\x1b[39m\x1b[38;5;252m \x1b[39m\x1b[38;5;67m1\x1b[39m
+  11 | \x1b[38;5;252m    \x1b[39m\x1b[38;5;31mstr\x1b[39m\x1b[38;5;252m(\x1b[39m\x1b[38;5;252mx\x1b[39m\x1b[38;5;252m)\x1b[39m
+  12 > \x1b[38;5;252m    \x1b[39m\x1b[38;5;252mresult\x1b[39m\x1b[38;5;252m \x1b[39m\x1b[38;5;252m=\x1b[39m\x1b[38;5;252m \x1b[39m\x1b[38;5;252;48;5;58mprint_stack\x1b[39;49m\x1b[38;5;252;48;5;58m(\x1b[39;49m\x1b[38;5;252;48;5;58m)\x1b[39;49m
+  13 | \x1b[38;5;252m    \x1b[39m\x1b[38;5;70;01mreturn\x1b[39;00m\x1b[38;5;252m \x1b[39m\x1b[38;5;252mresult\x1b[39m
+
+====================
+
+TerminalFormatter native:
+
+   9 | \x1b[34mdef\x1b[39;49;00m \x1b[32mbar\x1b[39;49;00m():
+  10 |     x = \x1b[34m1\x1b[39;49;00m
+  11 |     \x1b[36mstr\x1b[39;49;00m(x)
+  12 >     result = print_stack()
+  13 |     \x1b[34mreturn\x1b[39;49;00m result
+
+====================
+
+TerminalFormatter <class \'stack_data.core.style_with_executing_node.<locals>.NewStyle\'>:
+
+   9 | \x1b[34mdef\x1b[39;49;00m \x1b[32mbar\x1b[39;49;00m():
+  10 |     x = \x1b[34m1\x1b[39;49;00m
+  11 |     \x1b[36mstr\x1b[39;49;00m(x)
+  12 >     result = print_stack()
+  13 |     \x1b[34mreturn\x1b[39;49;00m result
+
+====================
+
+TerminalTrueColorFormatter native:
+
+   9 | \x1b[38;2;106;184;37;01mdef\x1b[39;00m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;68;127;207mbar\x1b[39m\x1b[38;2;208;208;208m(\x1b[39m\x1b[38;2;208;208;208m)\x1b[39m\x1b[38;2;208;208;208m:\x1b[39m
+  10 | \x1b[38;2;208;208;208m    \x1b[39m\x1b[38;2;208;208;208mx\x1b[39m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;208;208;208m=\x1b[39m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;54;119;169m1\x1b[39m
+  11 | \x1b[38;2;208;208;208m    \x1b[39m\x1b[38;2;36;144;157mstr\x1b[39m\x1b[38;2;208;208;208m(\x1b[39m\x1b[38;2;208;208;208mx\x1b[39m\x1b[38;2;208;208;208m)\x1b[39m
+  12 > \x1b[38;2;208;208;208m    \x1b[39m\x1b[38;2;208;208;208mresult\x1b[39m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;208;208;208m=\x1b[39m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;208;208;208mprint_stack\x1b[39m\x1b[38;2;208;208;208m(\x1b[39m\x1b[38;2;208;208;208m)\x1b[39m
+  13 | \x1b[38;2;208;208;208m    \x1b[39m\x1b[38;2;106;184;37;01mreturn\x1b[39;00m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;208;208;208mresult\x1b[39m
+
+====================
+
+TerminalTrueColorFormatter <class \'stack_data.core.style_with_executing_node.<locals>.NewStyle\'>:
+
+   9 | \x1b[38;2;106;184;37;01mdef\x1b[39;00m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;68;127;207mbar\x1b[39m\x1b[38;2;208;208;208m(\x1b[39m\x1b[38;2;208;208;208m)\x1b[39m\x1b[38;2;208;208;208m:\x1b[39m
+  10 | \x1b[38;2;208;208;208m    \x1b[39m\x1b[38;2;208;208;208mx\x1b[39m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;208;208;208m=\x1b[39m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;54;119;169m1\x1b[39m
+  11 | \x1b[38;2;208;208;208m    \x1b[39m\x1b[38;2;36;144;157mstr\x1b[39m\x1b[38;2;208;208;208m(\x1b[39m\x1b[38;2;208;208;208mx\x1b[39m\x1b[38;2;208;208;208m)\x1b[39m
+  12 > \x1b[38;2;208;208;208m    \x1b[39m\x1b[38;2;208;208;208mresult\x1b[39m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;208;208;208m=\x1b[39m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;208;208;208;48;2;68;68;0mprint_stack\x1b[39;49m\x1b[38;2;208;208;208;48;2;68;68;0m(\x1b[39;49m\x1b[38;2;208;208;208;48;2;68;68;0m)\x1b[39;49m
+  13 | \x1b[38;2;208;208;208m    \x1b[39m\x1b[38;2;106;184;37;01mreturn\x1b[39;00m\x1b[38;2;208;208;208m \x1b[39m\x1b[38;2;208;208;208mresult\x1b[39m
+
+====================
+
+HtmlFormatter native:
+
+   9 | <span class="k">def</span> <span class="nf">bar</span><span class="p">():</span>
+  10 |     <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+  11 |     <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  12 >     <span class="n">result</span> <span class="o">=</span> <span class="n">print_stack</span><span class="p">()</span>
+  13 |     <span class="k">return</span> <span class="n">result</span>
+
+====================
+
+HtmlFormatter <class \'stack_data.core.style_with_executing_node.<locals>.NewStyle\'>:
+
+   9 | <span class="k">def</span> <span class="nf">bar</span><span class="p">():</span>
+  10 |     <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+  11 |     <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  12 >     <span class="n">result</span> <span class="o">=</span> <span class="n n-ExecutingNode">print_stack</span><span class="p p-ExecutingNode">()</span>
+  13 |     <span class="k">return</span> <span class="n">result</span>
+
+====================
+
+"""
