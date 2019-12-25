@@ -32,7 +32,7 @@ def test_collapse_repeated():
 
 
 def test_highlight_unique_properties():
-    for _ in range(100):
+    for _ in range(20):
         lst = list('0123456789' * 3) + [random.choice('ABCD') for _ in range(1000)]
         random.shuffle(lst)
         result = list(highlight_unique(lst))

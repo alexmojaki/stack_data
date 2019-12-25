@@ -433,6 +433,14 @@ def check_pygments_tokens(source):
     assert ''.join(pygments_tokens) == source.text
 
 
+def test_invalid_source():
+    filename = str(Path(__file__).parent / "not_code.txt")
+    source = Source.for_filename(filename)
+    assert not source.tree
+    assert not hasattr(source, "pieces")
+    assert not hasattr(source, "tokens_by_lineno")
+
+
 def test_example():
     from .samples.example import bar
     result = bar()
