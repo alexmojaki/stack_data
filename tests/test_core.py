@@ -16,6 +16,8 @@ from stack_data import Options, Line, LINE_GAP, markers_from_ranges, Variable, R
 from stack_data import Source, FrameInfo
 from stack_data.utils import line_range
 
+samples_dir = Path(__file__).parent / "samples"
+
 
 def test_lines_with_gaps():
     lines = []
@@ -270,7 +272,7 @@ def test_variables():
 
 
 def test_pieces():
-    filename = Path(__file__).parent / "samples/pieces.py"
+    filename = samples_dir / "pieces.py"
     source = Source.for_filename(str(filename))
     pieces = [
         [
@@ -464,11 +466,26 @@ def check_pygments_tokens(source):
 
 
 def test_invalid_source():
-    filename = str(Path(__file__).parent / "not_code.txt")
+    filename = str(samples_dir / "not_code.txt")
     source = Source.for_filename(filename)
     assert not source.tree
     assert not hasattr(source, "pieces")
     assert not hasattr(source, "tokens_by_lineno")
+
+
+def test_absolute_filename():
+    sys.path.append(samples_dir)
+    short_filename = "to_exec.py"
+    full_filename = str(samples_dir / short_filename)
+    source = Source.for_filename(short_filename)
+    names = {}
+    code = compile(source.text, short_filename, "exec")
+    exec(code, names)
+    frame_info = names["frame_info"]
+    assert frame_info.source is source
+    assert frame_info.code is code
+    assert code.co_filename == source.filename == short_filename
+    assert frame_info.filename == full_filename
 
 
 def test_example():
