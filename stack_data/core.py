@@ -378,7 +378,7 @@ def markers_from_ranges(
             continue
 
         start_string, end_string = converted
-        if not isinstance(start_string, str) and isinstance(end_string, str):
+        if not (isinstance(start_string, str) and isinstance(end_string, str)):
             raise TypeError("converter should return None or a pair of strings")
 
         markers += [
