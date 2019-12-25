@@ -333,7 +333,7 @@ def test_pieces():
     ]
 
 
-def test_skipping_frames():
+def check_skipping_frames(collapse: bool):
     def factorial(n):
         if n <= 1:
             return 1 / 0  # exception lineno
@@ -343,12 +343,12 @@ def test_skipping_frames():
         return factorial(n)  # foo lineno
 
     try:
-        factorial(20)  # test_skipping_frames lineno
+        factorial(20)  # check_skipping_frames lineno
     except Exception as e:
         # tb = sys.exc_info()[2]
         tb = e.__traceback__
         result = []
-        for x in FrameInfo.stack_data(tb):
+        for x in FrameInfo.stack_data(tb, collapse_repeated_frames=collapse):
             if isinstance(x, FrameInfo):
                 result.append((x.code, x.lineno))
             else:
@@ -363,20 +363,37 @@ def test_skipping_frames():
         def simple_frame(func):
             return func.__code__, linenos[func.__name__]
 
+        if collapse:
+            middle = [
+                simple_frame(factorial),
+                simple_frame(foo),
+                simple_frame(factorial),
+                simple_frame(foo),
+                ("<RepeatedFrames "
+                 "check_skipping_frames.<locals>.factorial at line {factorial} (16 times), "
+                 "check_skipping_frames.<locals>.foo at line {foo} (16 times)>"
+                 ).format(**linenos),
+                simple_frame(factorial),
+                simple_frame(foo),
+            ]
+        else:
+            middle = [
+                *([
+                      simple_frame(factorial),
+                      simple_frame(foo),
+                  ] * 19)
+            ]
+
         assert result == [
-            simple_frame(test_skipping_frames),
-            simple_frame(factorial),
-            simple_frame(foo),
-            simple_frame(factorial),
-            simple_frame(foo),
-            ("<RepeatedFrames "
-             "test_skipping_frames.<locals>.factorial at line {factorial} (16 times), "
-             "test_skipping_frames.<locals>.foo at line {foo} (16 times)>"
-             ).format(**linenos),
-            simple_frame(factorial),
-            simple_frame(foo),
+            simple_frame(check_skipping_frames),
+            *middle,
             (factorial.__code__, linenos["exception"]),
         ]
+
+
+def test_skipping_frames():
+    check_skipping_frames(True)
+    check_skipping_frames(False)
 
 
 def sys_modules_sources():
