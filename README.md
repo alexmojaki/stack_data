@@ -304,6 +304,8 @@ If you want, you can also highlight the executing node in the frame in combinati
 3. Pass these two things to `stack_data.style_with_executing_node(style, modifier)` to get a new style class.
 4. Pass the new style to your formatter when you create it.
 
+Note that this doesn't work with `TerminalFormatter` which just uses the basic ANSI colors and doesn't use the style passed to it in general.
+
 ## Getting the full stack
 
 Currently `print_stack()` doesn't actually print the stack, it just prints one frame. Instead of `frame_info = FrameInfo(frame, options)`, let's do this:
