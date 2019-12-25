@@ -165,7 +165,7 @@ class Options:
             after: int = 1,
             include_signature: bool = False,
             max_lines_per_piece: int = 6,
-            pygments_formatter=None,
+            pygments_formatter=None
     ):
         self.before = before
         self.after = after
