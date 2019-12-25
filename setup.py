@@ -35,7 +35,7 @@ tests_require = [
 setup(
     name=package,
     version=__version__,
-    description="Powerful debugging tools for Python",
+    description="Extract data from python stack frames and tracebacks for informative displays",
     # long_description=file_to_string('README.md'),
     # long_description_content_type='text/markdown',
     url='http://github.com/alexmojaki/' + package,
