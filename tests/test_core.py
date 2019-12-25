@@ -468,7 +468,7 @@ def check_pieces(source):
 
 
 def check_pygments_tokens(source):
-    lexer = Python3Lexer(stripnl=False)
+    lexer = Python3Lexer(stripnl=False, ensurenl=False)
     pygments_tokens = [value for ttype, value in pygments.lex(source.text, lexer)]
     assert ''.join(pygments_tokens) == source.text
 
