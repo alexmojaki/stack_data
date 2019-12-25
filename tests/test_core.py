@@ -182,8 +182,15 @@ def test_markers():
         (50, True, '[['),
         (57, False, ' of type Options]]'),
     ]
+
+    line.text += '  # < > " & done'
     assert line.render(markers) == \
-           '[[line of type Line]] = only(FrameInfo(inspect.currentframe(), [[options of type Options]]).lines)'
+           '[[line of type Line]] = only(FrameInfo(inspect.currentframe(), [[options of type Options]]).lines)' \
+           '  # < > " & done'
+
+    assert line.render(markers, escape_html=True) == \
+           '[[line of type Line]] = only(FrameInfo(inspect.currentframe(), [[options of type Options]]).lines)' \
+           '  # &lt; &gt; &quot; &amp; done'
 
 
 def test_invalid_converter():

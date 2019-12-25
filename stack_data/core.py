@@ -1,4 +1,5 @@
 import ast
+import html
 import os
 import sys
 from collections import defaultdict, Counter
@@ -320,8 +321,10 @@ class Line(object):
     def render(
             self,
             markers: Iterable[MarkerInLine] = (),
+            *,
             strip_leading_indent: bool = True,
             pygmented: bool = False,
+            escape_html: bool = False
     ) -> str:
         """
         Produces a string for display consisting of .text
@@ -353,7 +356,10 @@ class Line(object):
         original_start = start
 
         for marker in markers:
-            parts.append(text[start:marker.position])
+            text_part = text[start:marker.position]
+            if escape_html:
+                text_part = html.escape(text_part)
+            parts.append(text_part)
             parts.append(marker.string)
 
             # Ensure that start >= leading_indent

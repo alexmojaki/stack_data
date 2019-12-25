@@ -239,6 +239,8 @@ line.render(markers)  # returns "foo = <b>bar</b>"
 
 Here `is_start=True` indicates that the marker is the first of a pair. This helps `line.render()` sort and insert the markers correctly so you don't end up with malformed HTML like `foo<b>.<i></b>bar</i>` where tags overlap.
 
+Since we're inserting HTML, we should actually use `line.render(markers, escape_html=True)` which will escape special HTML characters in the Python source (but not the markers) so for example `foo = bar < spam` would be rendered as `foo = <b>bar</b> &lt; spam`.
+
 Usually though you wouldn't create markers directly yourself. Instead you would start with one or more ranges and then convert them, like so:
 
 ```python
@@ -265,7 +267,7 @@ def convert_variable_ranges(r):
     return f'<span data-value="{repr(variable.value)}">', '</span>'
 
 markers = stack_data.markers_from_ranges(line.variable_ranges, convert_variable_ranges)
-print(f"{'-->' if line.is_current else '   '} {line.lineno:4} | {line.render(markers)}")
+print(f"{'-->' if line.is_current else '   '} {line.lineno:4} | {line.render(markers, escape_html=True)}")
 ```
 
 Then the output becomes:
