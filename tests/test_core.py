@@ -474,7 +474,7 @@ def test_invalid_source():
 
 
 def test_absolute_filename():
-    sys.path.append(samples_dir)
+    sys.path.append(str(samples_dir))
     short_filename = "to_exec.py"
     full_filename = str(samples_dir / short_filename)
     source = Source.for_filename(short_filename)
