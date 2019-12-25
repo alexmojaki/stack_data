@@ -8,10 +8,11 @@ from itertools import islice
 from pathlib import Path
 
 import pygments
+import pytest
 from executing import only
 # noinspection PyUnresolvedReferences
 from pygments.lexers import Python3Lexer
-from stack_data import Options, Line, LINE_GAP, markers_from_ranges, Variable
+from stack_data import Options, Line, LINE_GAP, markers_from_ranges, Variable, RangeInLine
 from stack_data import Source, FrameInfo
 from stack_data.utils import line_range
 
@@ -178,6 +179,16 @@ def test_markers():
     ]
     assert line.render(markers) == \
            '[[line of type Line]] = only(FrameInfo(inspect.currentframe(), [[options of type Options]]).lines)'
+
+
+def test_invalid_converter():
+    def converter(_):
+        return 1, 2
+
+    ranges = [RangeInLine(0, 1, None)]
+    with pytest.raises(TypeError):
+        # noinspection PyTypeChecker
+        markers_from_ranges(ranges, converter)
 
 
 def test_variables():
