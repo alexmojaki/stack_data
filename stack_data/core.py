@@ -331,6 +331,7 @@ class Line(object):
         """
         if pygmented:
             assert not markers, "Cannot use pygmented with markers"
+            assert self.frame_info.options.pygments_formatter, "Must set a pygments formatter in Options"
             start_line, lines = self.frame_info._pygmented_scope_lines
             result = lines[self.lineno - start_line]
             if strip_leading_indent:
@@ -714,8 +715,7 @@ class FrameInfo(object):
 
         formatter = self.options.pygments_formatter
         scope = self.scope
-        if not (scope and formatter):
-            return None
+        assert scope and formatter
 
         if isinstance(formatter, HtmlFormatter):
             formatter.nowrap = True

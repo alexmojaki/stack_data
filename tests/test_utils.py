@@ -1,7 +1,8 @@
 import random
 from collections import Counter
 
-from stack_data.utils import highlight_unique, collapse_repeated
+from stack_data import FrameInfo
+from stack_data.utils import highlight_unique, collapse_repeated, cached_property
 
 
 def assert_collapsed(lst, expected, summary):
@@ -40,3 +41,8 @@ def test_highlight_unique_properties():
         vals, highlighted = zip(*result)
         assert set(vals) == set('0123456789ABCD')
         assert set(highlighted) == {True, False}
+
+
+def test_cached_property_from_class():
+    assert FrameInfo.filename is FrameInfo.__dict__["filename"]
+    assert isinstance(FrameInfo.filename, cached_property)
