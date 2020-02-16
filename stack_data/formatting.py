@@ -25,7 +25,7 @@ class Formatter:
             strip_leading_indent=True,
             html=False,
             chain=True,
-            collapse_repeated_frames=True,
+            collapse_repeated_frames=True
     ):
         if pygmented and not options.pygments_formatter:
             try:
