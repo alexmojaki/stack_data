@@ -1,3 +1,4 @@
+import inspect
 import sys
 import traceback
 from types import FrameType, TracebackType
@@ -28,24 +29,19 @@ class Formatter:
             collapse_repeated_frames=True
     ):
         if pygmented and not options.pygments_formatter:
-            try:
-                import pygments
-            except ImportError:
-                pass
-            else:
-                if show_executing_node:
-                    pygments_style = style_with_executing_node(
-                        pygments_style, executing_node_modifier
-                    )
-
-                if pygments_formatter_cls is None:
-                    from pygments.formatters.terminal256 import Terminal256Formatter \
-                        as pygments_formatter_cls
-
-                options.pygments_formatter = pygments_formatter_cls(
-                    style=pygments_style,
-                    **pygments_formatter_kwargs or {},
+            if show_executing_node:
+                pygments_style = style_with_executing_node(
+                    pygments_style, executing_node_modifier
                 )
+
+            if pygments_formatter_cls is None:
+                from pygments.formatters.terminal256 import Terminal256Formatter \
+                    as pygments_formatter_cls
+
+            options.pygments_formatter = pygments_formatter_cls(
+                style=pygments_style,
+                **pygments_formatter_kwargs or {},
+            )
 
         self.pygmented = pygmented
         self.show_executing_node = show_executing_node
@@ -69,12 +65,21 @@ class Formatter:
         sys.excepthook = excepthook
 
     def print_exception(self, e=None, *, file=None):
+        self.print_lines(self.format_exception(e), file=file)
+
+    def print_stack(self, frame_or_tb=None, *, file=None):
+        if frame_or_tb is None:
+            frame_or_tb = inspect.currentframe().f_back
+
+        self.print_lines(self.format_stack(frame_or_tb), file=file)
+
+    def print_lines(self, lines, *, file=None):
         if file is None:
             file = sys.stderr
-        for line in self.format_exception(e):
+        for line in lines:
             print(line, file=file, end="")
 
-    def format_exception(self, e=None):
+    def format_exception(self, e=None) -> Iterable[str]:
         if e is None:
             e = sys.exc_info()[1]
 
@@ -88,30 +93,36 @@ class Formatter:
                 yield traceback._context_message
 
         yield 'Traceback (most recent call last):\n'
+        yield from self.format_stack(e.__traceback__)
+        yield from traceback.format_exception_only(type(e), e)
+
+    def format_stack(self, frame_or_tb=None) -> Iterable[str]:
+        if frame_or_tb is None:
+            frame_or_tb = inspect.currentframe().f_back
 
         yield from self.format_stack_data(
             FrameInfo.stack_data(
-                e.__traceback__,
+                frame_or_tb,
                 self.options,
                 collapse_repeated_frames=self.collapse_repeated_frames,
             )
         )
 
-        yield from traceback.format_exception_only(type(e), e)
-
-    def format_stack_data(self, stack: Iterable[Union[FrameInfo, RepeatedFrames]]):
+    def format_stack_data(
+            self, stack: Iterable[Union[FrameInfo, RepeatedFrames]]
+    ) -> Iterable[str]:
         for item in stack:
             if isinstance(item, FrameInfo):
                 yield from self.format_frame(item)
             else:
-                return self.format_repeated_frames(item)
+                yield self.format_repeated_frames(item)
 
-    def format_repeated_frames(self, repeated_frames: RepeatedFrames):
+    def format_repeated_frames(self, repeated_frames: RepeatedFrames) -> str:
         return '    [... skipping similar frames: {}]\n'.format(
             repeated_frames.description
         )
 
-    def format_frame(self, frame: Union[FrameInfo, FrameType, TracebackType]):
+    def format_frame(self, frame: Union[FrameInfo, FrameType, TracebackType]) -> Iterable[str]:
         if not isinstance(frame, FrameInfo):
             frame = FrameInfo(frame, self.options)
 
@@ -127,7 +138,7 @@ class Formatter:
         if self.show_variables:
             yield from self.format_variables(frame)
 
-    def format_frame_header(self, frame_info: FrameInfo):
+    def format_frame_header(self, frame_info: FrameInfo) -> str:
         return ' File "{frame_info.filename}", line {frame_info.lineno}, in {name}\n'.format(
             frame_info=frame_info,
             name=(
@@ -137,7 +148,7 @@ class Formatter:
             ),
         )
 
-    def format_line(self, line: Line):
+    def format_line(self, line: Line) -> str:
         result = ""
         if self.current_line_indicator:
             if line.is_current:
@@ -171,15 +182,15 @@ class Formatter:
 
         return result
 
-    def format_variables(self, frame_info: FrameInfo):
+    def format_variables(self, frame_info: FrameInfo) -> Iterable[str]:
         for var in sorted(frame_info.variables, key=lambda v: v.name):
             yield self.format_variable(var) + "\n"
 
-    def format_variable(self, var: Variable):
+    def format_variable(self, var: Variable) -> str:
         return "{} = {}".format(
             var.name,
             self.format_variable_value(var.value),
         )
 
-    def format_variable_value(self, value):
+    def format_variable_value(self, value) -> str:
         return repr(value)
