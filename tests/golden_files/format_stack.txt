@@ -1,0 +1,8 @@
+ File "formatter_example.py", line 42, in format_stack1
+      41 | def format_stack1(formatter):
+-->   42 |     return format_stack2(formatter)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+ File "formatter_example.py", line 46, in format_stack2
+      45 | def format_stack2(formatter):
+-->   46 |     return list(formatter.format_stack())
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

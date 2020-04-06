@@ -1,0 +1,8 @@
+ File "formatter_example.py", line 34, in print_stack1
+      33 | def print_stack1(formatter):
+-->   34 |     print_stack2(formatter)
+               ^^^^^^^^^^^^^^^^^^^^^^^
+ File "formatter_example.py", line 38, in print_stack2
+      37 | def print_stack2(formatter):
+-->   38 |     formatter.print_stack()
+               ^^^^^^^^^^^^^^^^^^^^^^^
