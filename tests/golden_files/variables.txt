@@ -8,7 +8,7 @@ Traceback (most recent call last):
       18 |         + []
       19 | )
       20 | try:
--->   21 |     return int(f"{lst}")
+-->   21 |     return int(str(lst))
                       ^^^^^^^^^^^^^
       22 | except:
 lst = [1]
@@ -20,7 +20,7 @@ During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
  File "formatter_example.py", line 24, in foo
-      21 |     return int(f"{lst}")
+      21 |     return int(str(lst))
       22 | except:
       23 |     try:
 -->   24 |         return 1 / 0

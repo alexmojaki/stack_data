@@ -18,7 +18,7 @@ def foo(n=5):
             + []
     )
     try:
-        return int(f"{lst}")
+        return int(str(lst))
     except:
         try:
             return 1 / 0
