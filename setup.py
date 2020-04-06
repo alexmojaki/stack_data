@@ -30,6 +30,7 @@ tests_require = [
     'pytest',
     'typeguard',
     'pygments',
+    'littleutils',
 ]
 
 setup(

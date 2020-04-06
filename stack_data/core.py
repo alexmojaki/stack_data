@@ -8,8 +8,8 @@ from tokenize import TokenInfo
 from types import FrameType, CodeType, TracebackType
 from typing import (
     Iterator, List, Tuple, Optional, NamedTuple,
-    Any, Iterable, Callable, Union
-)
+    Any, Iterable, Callable, Union,
+    Sequence)
 from typing import Mapping
 
 import executing
@@ -50,7 +50,7 @@ Then use Line.render to insert the markers correctly.
 class Variable(
     NamedTuple('_Variable',
                [('name', str),
-                ('nodes', List[ast.AST]),
+                ('nodes', Sequence[ast.AST]),
                 ('value', Any)])
 ):
     """
@@ -787,6 +787,8 @@ class FrameInfo(object):
             nodes, values = zip(*group)
             value = values[0]
             text = get_text(nodes[0])
+            if not text:
+                continue
             result.append(Variable(text, nodes, value))
 
         return result

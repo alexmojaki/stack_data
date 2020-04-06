@@ -1,0 +1,60 @@
+Traceback (most recent call last):
+ File "formatter_example.py", line 21, in foo
+       9 | x = 1
+      10 | lst = (
+      11 |         [
+      12 |             x,
+(...)
+      18 |         + []
+      19 | )
+      20 | try:
+-->   21 |     return int(str(lst))
+                      ^^^^^^^^^^^^^
+      22 | except:
+ValueError: invalid literal for int() with base 10: '[1]'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+ File "formatter_example.py", line 24, in foo
+      21 |     return int(str(lst))
+      22 | except:
+      23 |     try:
+-->   24 |         return 1 / 0
+                          ^^^^^
+      25 |     except Exception as e:
+ZeroDivisionError: division by zero
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+ File "formatter_example.py", line 30, in bar
+      29 | def bar():
+-->   30 |     exec("foo()")
+               ^^^^^^^^^^^^^
+ File "<string>", line 1, in <module>
+ File "formatter_example.py", line 8, in foo
+       6 | def foo(n=5):
+       7 |     if n > 0:
+-->    8 |         return foo(n - 1)
+                          ^^^^^^^^^^
+       9 |     x = 1
+ File "formatter_example.py", line 8, in foo
+       6 | def foo(n=5):
+       7 |     if n > 0:
+-->    8 |         return foo(n - 1)
+                          ^^^^^^^^^^
+       9 |     x = 1
+    [... skipping similar frames: foo at line 8 (2 times)]
+ File "formatter_example.py", line 8, in foo
+       6 | def foo(n=5):
+       7 |     if n > 0:
+-->    8 |         return foo(n - 1)
+                          ^^^^^^^^^^
+       9 |     x = 1
+ File "formatter_example.py", line 26, in foo
+      23 | try:
+      24 |     return 1 / 0
+      25 | except Exception as e:
+-->   26 |     raise TypeError from e
+TypeError
