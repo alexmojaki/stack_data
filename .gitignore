@@ -1,1 +1,7 @@
-dist
+/build
+/dist
+/*.egg-info
+/stack_data/version.py
+*.pyc
+*.pyo
+__pycache__

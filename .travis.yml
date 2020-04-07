@@ -13,12 +13,18 @@ env:
     - STACK_DATA_SLOW_TESTS=1
     - COVERALLS_PARALLEL=true
 
+before_install:
+  - pip install --upgrade coveralls setuptools>=44 setuptools_scm>=3.4.3 pep517
+
 install:
-  - pip install coveralls
-  - pip install .[tests]
+  - python3 -m pep517.build -b .
+  - ls -l
+  - export WHLNAME=./dist/stack_data-0.CI-py3-none-any.whl
+  - mv ./dist/*.whl $WHLNAME
+  - pip install --upgrade "$WHLNAME[tests]"
 
 script:
-  - coverage run --include='stack_data/*' -m pytest
+  - coverage run --branch --include='stack_data/*' -m pytest --junitxml=./rspec.xml
   - coverage report -m
 
 after_success:
