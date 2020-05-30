@@ -4,7 +4,6 @@ import os
 import sys
 from collections import defaultdict, Counter
 from textwrap import dedent
-from tokenize import TokenInfo
 from types import FrameType, CodeType, TracebackType
 from typing import (
     Iterator, List, Tuple, Optional, NamedTuple,
@@ -87,7 +86,7 @@ class Source(executing.Source):
         return list(self._clean_pieces())
 
     @cached_property
-    def tokens_by_lineno(self) -> Mapping[int, List[TokenInfo]]:
+    def tokens_by_lineno(self) -> Mapping[int, List[Token]]:
         if not self.tree:
             raise AttributeError("This file doesn't contain valid Python, so .tokens_by_lineno doesn't exist")
         return group_by_key_func(
