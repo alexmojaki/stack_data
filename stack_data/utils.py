@@ -84,7 +84,7 @@ def collapse_repeated(lst, *, collapser, mapper=identity, key=identity):
 
 
 def is_frame(frame_or_tb: Union[FrameType, TracebackType]) -> bool:
-    assert isinstance(frame_or_tb, (types.FrameType, types.TracebackType))
+    assert_(isinstance(frame_or_tb, (types.FrameType, types.TracebackType)))
     return isinstance(frame_or_tb, (types.FrameType,))
 
 
@@ -159,3 +159,10 @@ def _pygmented_with_ranges(formatter, code, ranges):
 
     lexer = MyLexer(stripnl=False)
     return pygments.highlight(code, lexer, formatter).splitlines()
+
+
+def assert_(condition, error=""):
+    if not condition:
+        if isinstance(error, str):
+            error = AssertionError(error)
+        raise error

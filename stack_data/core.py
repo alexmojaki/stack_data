@@ -19,7 +19,7 @@ from pure_eval import Evaluator, is_expression_interesting
 from stack_data.utils import (
     truncate, unique_in_order, line_range,
     frame_and_lineno, iter_stack, collapse_repeated, group_by_key_func,
-    cached_property, is_frame, _pygmented_with_ranges)
+    cached_property, is_frame, _pygmented_with_ranges, assert_)
 
 RangeInLine = NamedTuple('RangeInLine',
                          [('start', int),
@@ -333,8 +333,7 @@ class Line(object):
         common to all lines in this frame will be excluded.
         """
         if pygmented:
-            assert not markers, "Cannot use pygmented with markers"
-            assert self.frame_info.options.pygments_formatter, "Must set a pygments formatter in Options"
+            assert_(not markers, ValueError("Cannot use pygmented with markers"))
             start_line, lines = self.frame_info._pygmented_scope_lines
             result = lines[self.lineno - start_line]
             if strip_leading_indent:
@@ -721,7 +720,8 @@ class FrameInfo(object):
 
         formatter = self.options.pygments_formatter
         scope = self.scope
-        assert scope and formatter
+        assert_(formatter, ValueError("Must set a pygments formatter in Options"))
+        assert_(scope)
 
         if isinstance(formatter, HtmlFormatter):
             formatter.nowrap = True
