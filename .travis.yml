@@ -17,11 +17,7 @@ before_install:
   - pip install --upgrade coveralls setuptools>=44 setuptools_scm>=3.4.3 pep517
 
 install:
-  - python3 -m pep517.build -b .
-  - ls -l
-  - export WHLNAME=./dist/stack_data-0.CI-py3-none-any.whl
-  - mv ./dist/*.whl $WHLNAME
-  - pip install --upgrade "$WHLNAME[tests]"
+  - pip install '.[tests]'
 
 script:
   - coverage run --branch --include='stack_data/*' -m pytest --junitxml=./rspec.xml
