@@ -5,6 +5,7 @@ from types import FrameType, TracebackType
 from typing import Union, Iterable
 
 from stack_data import style_with_executing_node, Options, Line, FrameInfo, LINE_GAP, Variable, RepeatedFrames
+from stack_data.utils import assert_
 
 
 class Formatter:
@@ -45,7 +46,10 @@ class Formatter:
 
         self.pygmented = pygmented
         self.show_executing_node = show_executing_node
-        assert len(executing_node_underline) == 1
+        assert_(
+            len(executing_node_underline) == 1,
+            ValueError("executing_node_underline must be a single character"),
+        )
         self.executing_node_underline = executing_node_underline
         self.current_line_indicator = current_line_indicator or ""
         self.line_gap_string = line_gap_string
@@ -132,7 +136,7 @@ class Formatter:
             if isinstance(line, Line):
                 yield self.format_line(line)
             else:
-                assert line is LINE_GAP
+                assert_(line is LINE_GAP)
                 yield self.line_gap_string + "\n"
 
         if self.show_variables:

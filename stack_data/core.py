@@ -4,7 +4,6 @@ import os
 import sys
 from collections import defaultdict, Counter
 from textwrap import dedent
-from tokenize import TokenInfo
 from types import FrameType, CodeType, TracebackType
 from typing import (
     Iterator, List, Tuple, Optional, NamedTuple,
@@ -19,7 +18,7 @@ from pure_eval import Evaluator, is_expression_interesting
 from stack_data.utils import (
     truncate, unique_in_order, line_range,
     frame_and_lineno, iter_stack, collapse_repeated, group_by_key_func,
-    cached_property, is_frame, _pygmented_with_ranges)
+    cached_property, is_frame, _pygmented_with_ranges, assert_)
 
 RangeInLine = NamedTuple('RangeInLine',
                          [('start', int),
@@ -87,7 +86,7 @@ class Source(executing.Source):
         return list(self._clean_pieces())
 
     @cached_property
-    def tokens_by_lineno(self) -> Mapping[int, List[TokenInfo]]:
+    def tokens_by_lineno(self) -> Mapping[int, List[Token]]:
         if not self.tree:
             raise AttributeError("This file doesn't contain valid Python, so .tokens_by_lineno doesn't exist")
         return group_by_key_func(
@@ -333,8 +332,7 @@ class Line(object):
         common to all lines in this frame will be excluded.
         """
         if pygmented:
-            assert not markers, "Cannot use pygmented with markers"
-            assert self.frame_info.options.pygments_formatter, "Must set a pygments formatter in Options"
+            assert_(not markers, ValueError("Cannot use pygmented with markers"))
             start_line, lines = self.frame_info._pygmented_scope_lines
             result = lines[self.lineno - start_line]
             if strip_leading_indent:
@@ -721,7 +719,8 @@ class FrameInfo(object):
 
         formatter = self.options.pygments_formatter
         scope = self.scope
-        assert scope and formatter
+        assert_(formatter, ValueError("Must set a pygments formatter in Options"))
+        assert_(scope)
 
         if isinstance(formatter, HtmlFormatter):
             formatter.nowrap = True
