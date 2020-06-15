@@ -17,8 +17,7 @@ def foo():
             5,
             6
         ][0])
-    result = print_stack()
-    return result
+    return print_stack()
 
 
 def bar():

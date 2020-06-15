@@ -305,16 +305,8 @@ class Line(object):
         end -= 1
         if not (start <= self.lineno <= end):
             return None
-        if start == self.lineno:
-            range_start = node.first_token.start[1]
-        else:
-            range_start = 0
-
-        if end == self.lineno:
-            range_end = node.last_token.end[1]
-        else:
-            range_end = len(self.text)
-
+        range_start = node.first_token.start[1] if start == self.lineno else 0
+        range_end = node.last_token.end[1] if end == self.lineno else len(self.text)
         return RangeInLine(range_start, range_end, data)
 
     def render(
@@ -347,10 +339,7 @@ class Line(object):
         markers.sort(key=lambda t: t[:2])
 
         parts = []
-        if strip_leading_indent:
-            start = self.leading_indent
-        else:
-            start = 0
+        start = self.leading_indent if strip_leading_indent else 0
         original_start = start
 
         for marker in markers:
@@ -620,7 +609,7 @@ class FrameInfo(object):
         Always a subset of .scope_pieces.
         """
         scope_pieces = self.scope_pieces
-        if not self.scope_pieces:
+        if not scope_pieces:
             return []
 
         pos = scope_pieces.index(self.executing_piece)
@@ -700,7 +689,7 @@ class FrameInfo(object):
         """
         The AST node of the innermost function, class or module being executed.
         """
-        if not self.source.tree or not self.executing.statements:
+        if not (self.source.tree and self.executing.statements):
             return None
 
         stmt = list(self.executing.statements)[0]

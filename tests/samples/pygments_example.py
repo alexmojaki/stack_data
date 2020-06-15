@@ -9,8 +9,7 @@ from stack_data import FrameInfo, Options, style_with_executing_node
 def bar():
     x = 1
     str(x)
-    result = print_stack()
-    return result
+    return print_stack()
 
 
 def print_stack():

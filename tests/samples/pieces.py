@@ -15,10 +15,7 @@ def foo(x=1, y=2):
             2,
         )
 
-    for i in range(
-            0,
-            6
-    ):
+    for i in range(6):
         try:
             str(i)
         except:
@@ -39,20 +36,7 @@ def foo2(
         x=1,
         y=2,
 ):
-    while 9:
-        while (
-                9 + 9
-        ):
-            if 1:
-                pass
-            elif 2:
-                pass
-            elif (
-                    3 + 3
-            ):
-                pass
-            else:
-                pass
+    pass
 
 
 class Foo(object):
