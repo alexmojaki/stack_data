@@ -56,4 +56,6 @@ def foo2(
 
 
 class Foo(object):
-    pass
+    @property
+    def foo(self):
+        return 3

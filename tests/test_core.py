@@ -353,7 +353,9 @@ def test_pieces():
         ['            else:'],
         ['                pass'],
         ['class Foo(object):'],
-        ['    pass'],
+        ['    @property',
+         '    def foo(self):'],
+        ['        return 3']
     ]
 
 
