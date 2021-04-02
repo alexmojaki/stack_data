@@ -1,0 +1,5 @@
+ File "formatter_example.py", line 51, in format_frame
+      49 | def format_frame(formatter):
+      50 |     frame = inspect.currentframe()
+-->   51 |     return list(formatter.format_frame(frame))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

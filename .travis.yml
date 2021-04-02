@@ -7,18 +7,21 @@ python:
   - 3.6
   - 3.7
   - 3.8-dev
+  - 3.9-dev
 
 env:
   global:
     - STACK_DATA_SLOW_TESTS=1
     - COVERALLS_PARALLEL=true
 
+before_install:
+  - pip install --upgrade coveralls setuptools>=44 setuptools_scm>=3.4.3 pep517
+
 install:
-  - pip install coveralls
-  - pip install .[tests]
+  - pip install '.[tests]'
 
 script:
-  - coverage run --include='stack_data/*' -m pytest
+  - coverage run --branch --include='stack_data/*' -m pytest --junitxml=./rspec.xml
   - coverage report -m
 
 after_success:
