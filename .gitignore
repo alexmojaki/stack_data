@@ -1,7 +1,12 @@
-/build
-/dist
-/*.egg-info
-/stack_data/version.py
+dist
+build
+stack_data/version.py
+.eggs
+.pytest_cache
+.tox
+pip-wheel-metadata
+venv
+*.egg-info
 *.pyc
 *.pyo
 __pycache__

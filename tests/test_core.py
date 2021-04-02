@@ -248,6 +248,20 @@ def test_variables():
             value=options,
         ),
         Variable(
+            name='str(x)',
+            nodes=(
+                body[3].value,
+            ),
+            value='{982347298304}',
+        ),
+        Variable(
+            name='str(y)',
+            nodes=(
+                body[1].value,
+            ),
+            value='123986',
+        ),
+        Variable(
             name='x',
             nodes=(
                 body[2].targets[0],
@@ -275,7 +289,7 @@ def test_variables():
 
     assert (
             sorted(frame_info.variables_in_lines) ==
-            variables[:3]
+            [*variables[:3], variables[4]]
     )
 
 
@@ -339,7 +353,9 @@ def test_pieces():
         ['            else:'],
         ['                pass'],
         ['class Foo(object):'],
-        ['    pass'],
+        ['    @property',
+         '    def foo(self):'],
+        ['        return 3']
     ]
 
 
