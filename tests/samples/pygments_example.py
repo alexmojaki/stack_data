@@ -6,11 +6,25 @@ from pygments.formatters.terminal256 import Terminal256Formatter, TerminalTrueCo
 from stack_data import FrameInfo, Options, style_with_executing_node
 
 
+def identity(x):
+    return x
+
+
 def bar():
     x = 1
     str(x)
-    result = print_stack()
-    return result
+
+    @deco
+    def foo():
+        pass
+        pass
+        pass
+    return foo.result
+
+
+def deco(f):
+    f.result = print_stack()
+    return f
 
 
 def print_stack():
@@ -26,13 +40,13 @@ def print_stack():
             formatter = formatter_cls(style=style)
             options = Options(pygments_formatter=formatter)
             frame = inspect.currentframe().f_back
-            frame_info = FrameInfo(frame, options)
-            for line in frame_info.lines:
-                result += '{:4} {} {}\n'.format(
-                    line.lineno,
-                    '>' if line.is_current else '|',
-                    line.render(pygmented=True)
-                )
+            for frame_info in list(FrameInfo.stack_data(frame, options))[-2:]:
+                for line in frame_info.lines:
+                    result += '{:4} | {}\n'.format(
+                        line.lineno,
+                        line.render(pygmented=True)
+                    )
+                result += "-----\n"
             result += "\n====================\n\n"
     return result
 
