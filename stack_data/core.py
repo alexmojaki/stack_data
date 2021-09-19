@@ -631,7 +631,7 @@ class FrameInfo(object):
         if (
                 self.options.include_signature
                 and not self.code.co_name.startswith('<')
-                and isinstance(self.scope, ast.FunctionDef)
+                and isinstance(self.scope, (ast.FunctionDef, ast.AsyncFunctionDef))
                 and pieces_start > 0
         ):
             pieces.insert(0, scope_pieces[0])
@@ -709,7 +709,7 @@ class FrameInfo(object):
             # a function definition, e.g. if we're calling a decorator
             # In that case we still want the surrounding scope, not that function
             stmt = stmt.parent
-            if isinstance(stmt, (ast.FunctionDef, ast.ClassDef, ast.Module)):
+            if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)):
                 return stmt
 
     @cached_property
@@ -760,7 +760,7 @@ class FrameInfo(object):
             if is_expression_interesting(*pair)
         ]  # type: List[Tuple[ast.AST, Any]]
 
-        if isinstance(scope, ast.FunctionDef):
+        if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef)):
             for node in ast.walk(scope.args):
                 if not isinstance(node, ast.arg):
                     continue
