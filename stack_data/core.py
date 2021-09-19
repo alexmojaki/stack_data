@@ -753,7 +753,6 @@ class FrameInfo(object):
             return []
 
         evaluator = Evaluator.from_frame(self.frame)
-        get_text = self.source.asttokens().get_text
         scope = self.scope
         node_values = [
             pair
@@ -773,12 +772,23 @@ class FrameInfo(object):
                 else:
                     node_values.append((node, value))
 
-        # TODO use compile(...).co_code instead of ast.dump?
         # Group equivalent nodes together
+        def get_text(n):
+            if isinstance(n, ast.arg):
+                return n.arg
+            else:
+                return self.source.asttokens().get_text(n)
+
+        def normalise_node(n):
+            try:
+                # Add parens to avoid syntax errors for multiline expressions
+                return ast.parse('(' + get_text(n) + ')')
+            except Exception:
+                return n
+
         grouped = group_by_key_func(
             node_values,
-            # Add parens to avoid syntax errors for multiline expressions
-            lambda nv: ast.dump(ast.parse('(' + get_text(nv[0]) + ')')),
+            lambda nv: ast.dump(normalise_node(nv[0])),
         )
 
         result = []
