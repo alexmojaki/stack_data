@@ -631,7 +631,7 @@ class FrameInfo(object):
         if (
                 self.options.include_signature
                 and not self.code.co_name.startswith('<')
-                and isinstance(self.scope, ast.FunctionDef)
+                and isinstance(self.scope, (ast.FunctionDef, ast.AsyncFunctionDef))
                 and pieces_start > 0
         ):
             pieces.insert(0, scope_pieces[0])
@@ -709,7 +709,7 @@ class FrameInfo(object):
             # a function definition, e.g. if we're calling a decorator
             # In that case we still want the surrounding scope, not that function
             stmt = stmt.parent
-            if isinstance(stmt, (ast.FunctionDef, ast.ClassDef, ast.Module)):
+            if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)):
                 return stmt
 
     @cached_property
@@ -753,7 +753,6 @@ class FrameInfo(object):
             return []
 
         evaluator = Evaluator.from_frame(self.frame)
-        get_text = self.source.asttokens().get_text
         scope = self.scope
         node_values = [
             pair
@@ -761,7 +760,7 @@ class FrameInfo(object):
             if is_expression_interesting(*pair)
         ]  # type: List[Tuple[ast.AST, Any]]
 
-        if isinstance(scope, ast.FunctionDef):
+        if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef)):
             for node in ast.walk(scope.args):
                 if not isinstance(node, ast.arg):
                     continue
@@ -773,12 +772,23 @@ class FrameInfo(object):
                 else:
                     node_values.append((node, value))
 
-        # TODO use compile(...).co_code instead of ast.dump?
         # Group equivalent nodes together
+        def get_text(n):
+            if isinstance(n, ast.arg):
+                return n.arg
+            else:
+                return self.source.asttokens().get_text(n)
+
+        def normalise_node(n):
+            try:
+                # Add parens to avoid syntax errors for multiline expressions
+                return ast.parse('(' + get_text(n) + ')')
+            except Exception:
+                return n
+
         grouped = group_by_key_func(
             node_values,
-            # Add parens to avoid syntax errors for multiline expressions
-            lambda nv: ast.dump(ast.parse('(' + get_text(nv[0]) + ')')),
+            lambda nv: ast.dump(normalise_node(nv[0])),
         )
 
         result = []
