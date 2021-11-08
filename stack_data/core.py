@@ -77,7 +77,8 @@ class Source(executing.Source):
 
     def __init__(self, *args, **kwargs):
         super(Source, self).__init__(*args, **kwargs)
-        self.asttokens()
+        if self.tree:
+            self.asttokens()
 
     @cached_property
     def pieces(self) -> List[range]:
