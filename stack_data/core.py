@@ -140,8 +140,10 @@ class Source(executing.Source):
                 for rang, group in sorted(group_by_key_func(body, line_range).items()):
                     sub_stmt = group[0]
                     for inner_start, inner_end in self._raw_split_into_pieces(sub_stmt, *rang):
-                        yield start, inner_start
-                        yield inner_start, inner_end
+                        if start < inner_start:
+                            yield start, inner_start
+                        if inner_start < inner_end:
+                            yield inner_start, inner_end
                         start = inner_end
 
         yield start, end
