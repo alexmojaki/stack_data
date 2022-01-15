@@ -309,12 +309,21 @@ class Line(object):
         if not (start <= self.lineno <= end):
             return None
         if start == self.lineno:
-            range_start = node.first_token.start[1]
+            try:
+                range_start = node.first_token.start[1]
+            except AttributeError:
+                range_start = node.col_offset
         else:
             range_start = 0
 
         if end == self.lineno:
-            range_end = node.last_token.end[1]
+            try:
+                range_end = node.last_token.end[1]
+            except AttributeError:
+                try:
+                    range_end = node.end_col_offset
+                except AttributeError:
+                    return None
         else:
             range_end = len(self.text)
 

@@ -27,7 +27,7 @@ class MyFormatter(BaseFormatter):
 
 
 def test_example(capsys):
-    from .samples.formatter_example import bar, print_stack1, format_stack1, format_frame
+    from .samples.formatter_example import bar, print_stack1, format_stack1, format_frame, f_string
 
     @contextmanager
     def check_example(name):
@@ -66,3 +66,9 @@ def test_example(capsys):
         formatter = BaseFormatter()
         formatted = format_frame(formatter)
         formatter.print_lines(formatted)
+
+    with check_example(f"f_string_{'old' if sys.version_info[:2] < (3, 8) else 'new'}"):
+        try:
+            f_string()
+        except Exception:
+            MyFormatter().print_exception()

@@ -51,6 +51,16 @@ def format_frame(formatter):
     return list(formatter.format_frame(frame))
 
 
+def f_string():
+    f"""{str
+    (
+        1 /
+          0 + 4
+        + 5
+    )
+    }"""
+
+
 if __name__ == '__main__':
     try:
         bar()

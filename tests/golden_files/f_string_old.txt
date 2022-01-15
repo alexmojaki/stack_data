@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+ File "formatter_example.py", line 61, in f_string
+      54 | def f_string():
+      55 |     f"""{str
+      56 |     (
+      57 |         1 /
+      58 |           0 + 4
+      59 |         + 5
+      60 |     )
+-->   61 |     }"""
+ZeroDivisionError: division by zero

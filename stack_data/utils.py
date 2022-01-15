@@ -27,15 +27,19 @@ def unique_in_order(it: Iterable[T]) -> List[T]:
 def line_range(node: ast.AST) -> Tuple[int, int]:
     """
     Returns a pair of numbers representing a half open range
-    (i.e. suitable as arguments to the range builtin)
+    (i.e. suitable as arguments to the `range()` builtin)
     of line numbers of the given AST nodes.
-    This function relies on the first_token and last_token
-    attributes set by asttokens.
     """
-    return (
-        node.first_token.start[0],
-        node.last_token.end[0] + 1,
-    )
+    try:
+        return (
+            node.first_token.start[0],
+            node.last_token.end[0] + 1,
+        )
+    except AttributeError:
+        return (
+            node.lineno,
+            getattr(node, "end_lineno", node.lineno) + 1,
+        )
 
 
 def highlight_unique(lst: List[T]) -> Iterator[Tuple[T, bool]]:
