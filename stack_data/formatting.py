@@ -140,7 +140,10 @@ class Formatter:
                 yield self.line_gap_string + "\n"
 
         if self.show_variables:
-            yield from self.format_variables(frame)
+            try:
+                yield from self.format_variables(frame)
+            except Exception:
+                pass
 
     def format_frame_header(self, frame_info: FrameInfo) -> str:
         return ' File "{frame_info.filename}", line {frame_info.lineno}, in {name}\n'.format(
@@ -188,7 +191,10 @@ class Formatter:
 
     def format_variables(self, frame_info: FrameInfo) -> Iterable[str]:
         for var in sorted(frame_info.variables, key=lambda v: v.name):
-            yield self.format_variable(var) + "\n"
+            try:
+                yield self.format_variable(var) + "\n"
+            except Exception:
+                pass
 
     def format_variable(self, var: Variable) -> str:
         return "{} = {}".format(

@@ -33,6 +33,26 @@ def foo(x=1, y=2):
             str("""
             foo
             """)
+            str(f"""
+            {str(str)}
+            """)
+            str(f"""
+            foo
+            {
+                str(
+                    str
+                )
+            }
+            bar
+            {str(str)}
+            baz
+            {
+                str(
+                    str
+                )
+            }
+            spam
+            """)
 
 
 def foo2(

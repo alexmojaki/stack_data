@@ -1,6 +1,6 @@
 # stack_data
 
-[![Build Status](https://travis-ci.org/alexmojaki/stack_data.svg?branch=master)](https://travis-ci.org/alexmojaki/stack_data) [![Coverage Status](https://coveralls.io/repos/github/alexmojaki/stack_data/badge.svg?branch=master)](https://coveralls.io/github/alexmojaki/stack_data?branch=master) [![Supports Python versions 3.5+](https://img.shields.io/pypi/pyversions/stack_data.svg)](https://pypi.python.org/pypi/stack_data)
+[![Tests](https://github.com/alexmojaki/stack_data/actions/workflows/pytest.yml/badge.svg)](https://github.com/alexmojaki/stack_data/actions/workflows/pytest.yml) [![Coverage Status](https://coveralls.io/repos/github/alexmojaki/stack_data/badge.svg?branch=master)](https://coveralls.io/github/alexmojaki/stack_data?branch=master) [![Supports Python versions 3.5+](https://img.shields.io/pypi/pyversions/stack_data.svg)](https://pypi.python.org/pypi/stack_data)
 
 This is a library that extracts data from stack frames and tracebacks, particularly to display more useful tracebacks than the default.
 

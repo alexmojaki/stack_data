@@ -208,7 +208,7 @@ def test_variables():
     assert repr(options) == 'Options(after=0, before=1, include_signature=False, ' \
                             'max_lines_per_piece=6, pygments_formatter=None)'
 
-    def foo(arg):
+    def foo(arg, _arg2: str = None, *_args, **_kwargs):
         y = 123986
         str(y)
         x = {982347298304}
@@ -233,6 +233,27 @@ def test_variables():
     assert frame_info.filename.endswith("test_core.py")
     assert os.path.isabs(frame_info.filename)
     expected_variables = [
+        Variable(
+            name='_arg2',
+            nodes=(
+                frame_info.scope.args.args[1],
+            ),
+            value=None,
+        ),
+        Variable(
+            name='_args',
+            nodes=(
+                frame_info.scope.args.vararg,
+            ),
+            value=(),
+        ),
+        Variable(
+            name='_kwargs',
+            nodes=(
+                frame_info.scope.args.kwarg,
+            ),
+            value={},
+        ),
         Variable(
             name='arg',
             nodes=(
@@ -284,12 +305,12 @@ def test_variables():
 
     assert (
             sorted(frame_info.variables_in_executing_piece) ==
-            variables[:2]
+            variables[3:5]
     )
 
     assert (
             sorted(frame_info.variables_in_lines) ==
-            [*variables[:3], variables[4]]
+            [*variables[3:6], variables[7]]
     )
 
 
@@ -334,6 +355,26 @@ def test_pieces():
         ['        finally:'],
         ['            str("""',
          '            foo',
+         '            """)'],
+        ['            str(f"""',
+         '            {str(str)}',
+         '            """)'],
+        ['            str(f"""',
+         '            foo',
+         '            {',
+         '                str(',
+         '                    str',
+         '                )',
+         '            }',
+         '            bar',
+         '            {str(str)}',
+         '            baz',
+         '            {',
+         '                str(',
+         '                    str',
+         '                )',
+         '            }',
+         '            spam',
          '            """)'],
         ['def foo2(',
          '        x=1,',
