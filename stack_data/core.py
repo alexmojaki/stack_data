@@ -229,11 +229,13 @@ class Line(object):
             self,
             frame_info: 'FrameInfo',
             lineno: int,
+            common_indent: int = 0,
     ):
         self.frame_info = frame_info
         self.lineno = lineno
         self.text = frame_info.source.lines[lineno - 1]  # type: str
         self.leading_indent = None  # type: Optional[int]
+        self.common_indent = common_indent
 
     def __repr__(self):
         return "<{self.__class__.__name__} {self.lineno} (current={self.is_current}) " \
@@ -313,6 +315,8 @@ class Line(object):
                 range_start = node.first_token.start[1]
             except AttributeError:
                 range_start = node.col_offset
+        elif self.common_indent:
+            range_start = self.common_indent
         else:
             range_start = 0
 
@@ -669,6 +673,23 @@ class FrameInfo(object):
         if not pieces:
             return []
 
+        # In case the node of interest spans multiple lines,
+        # we do a first pass through to determine what should
+        # be the common indentation of the markers
+        indents = []
+        for i, piece in enumerate(pieces):
+            lines = [
+                Line(self, i)
+                for i in piece
+            ]  # type: List[Line]
+            for line in lines:
+                for line_range in line.executing_node_ranges:
+                    if line.is_current:
+                        indents.append(line_range.start)
+                    else:
+                        indents.append(len(line.text) - len(line.text.lstrip()))
+        common_indent = min(indents) if indents else 0
+
         result = []
         for i, piece in enumerate(pieces):
             if (
@@ -679,7 +700,7 @@ class FrameInfo(object):
                 result.append(LINE_GAP)
 
             lines = [
-                Line(self, i)
+                Line(self, i, common_indent)
                 for i in piece
             ]  # type: List[Line]
             if piece != self.executing_piece:
