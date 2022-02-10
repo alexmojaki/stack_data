@@ -217,6 +217,8 @@ class Line(object):
         - is_current: whether this is the line currently being executed by the interpreter
             within this frame.
         - tokens: a list of source tokens in this line
+        - _markers_block_indent: a private attribute used in internal computations
+            to ensure that the markers share a common indentation.
 
     There are several helpers for constructing RangeInLines which can be converted to markers
     using markers_from_ranges which can be passed to .render():
@@ -229,13 +231,13 @@ class Line(object):
             self,
             frame_info: 'FrameInfo',
             lineno: int,
-            common_indent: int = 0,
+            markers_block_indent: int = 0,
     ):
         self.frame_info = frame_info
         self.lineno = lineno
         self.text = frame_info.source.lines[lineno - 1]  # type: str
         self.leading_indent = None  # type: Optional[int]
-        self.common_indent = common_indent
+        self._markers_block_indent = markers_block_indent
 
     def __repr__(self):
         return "<{self.__class__.__name__} {self.lineno} (current={self.is_current}) " \
@@ -315,11 +317,10 @@ class Line(object):
                 range_start = node.first_token.start[1]
             except AttributeError:
                 range_start = node.col_offset
-        elif self.common_indent:
-            range_start = self.common_indent
         else:
             range_start = 0
 
+        range_start = max(range_start, self._markers_block_indent)
         if end == self.lineno:
             try:
                 range_end = node.last_token.end[1]
@@ -654,6 +655,31 @@ class FrameInfo(object):
 
         return pieces
 
+    def markers_block_indent(self) -> int:
+        """
+        The common minimal indentation shared by the markers intended
+        for an exception node that spans multiple lines.
+        """
+        pieces = self.included_pieces
+        if not pieces:
+            return 0
+
+        indents = []
+        lines = []
+        for i, piece in enumerate(pieces):
+            lines.extend([
+                Line(self, i)
+                for i in piece
+            ])
+        for line in lines:
+            for line_range in line.executing_node_ranges:
+                begin_text = len(line.text) - len(line.text.lstrip())
+                indent = max(line_range.start, begin_text)
+                indents.append(indent)
+        if len(indents) < 2:  # We are not indenting a block
+            return 0
+        return min(indents) if indents else 0
+
     @cached_property
     def lines(self) -> List[Union[Line, LineGap]]:
         """
@@ -673,23 +699,7 @@ class FrameInfo(object):
         if not pieces:
             return []
 
-        # In case the node of interest spans multiple lines,
-        # we do a first pass through to determine what should
-        # be the common indentation of the markers
-        indents = []
-        for i, piece in enumerate(pieces):
-            lines = [
-                Line(self, i)
-                for i in piece
-            ]  # type: List[Line]
-            for line in lines:
-                for line_range in line.executing_node_ranges:
-                    if line.is_current:
-                        indents.append(line_range.start)
-                    else:
-                        indents.append(len(line.text) - len(line.text.lstrip()))
-        common_indent = min(indents) if indents else 0
-
+        common_markers_block_indent = self.markers_block_indent()
         result = []
         for i, piece in enumerate(pieces):
             if (
@@ -700,7 +710,7 @@ class FrameInfo(object):
                 result.append(LINE_GAP)
 
             lines = [
-                Line(self, i, common_indent)
+                Line(self, i, common_markers_block_indent)
                 for i in piece
             ]  # type: List[Line]
             if piece != self.executing_piece:
