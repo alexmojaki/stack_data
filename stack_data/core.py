@@ -231,13 +231,13 @@ class Line(object):
             self,
             frame_info: 'FrameInfo',
             lineno: int,
-            markers_block_indent: int = 0,
+            _markers_block_indent: int = 0,
     ):
         self.frame_info = frame_info
         self.lineno = lineno
         self.text = frame_info.source.lines[lineno - 1]  # type: str
         self.leading_indent = None  # type: Optional[int]
-        self._markers_block_indent = markers_block_indent
+        self._markers_block_indent = _markers_block_indent
 
     def __repr__(self):
         return "<{self.__class__.__name__} {self.lineno} (current={self.is_current}) " \
@@ -655,10 +655,12 @@ class FrameInfo(object):
 
         return pieces
 
-    def markers_block_indent(self) -> int:
+    def _markers_block_indent(self) -> int:
         """
         The common minimal indentation shared by the markers intended
         for an exception node that spans multiple lines.
+
+        Intended to be used only internally.
         """
         pieces = self.included_pieces
         if not pieces:
@@ -699,7 +701,7 @@ class FrameInfo(object):
         if not pieces:
             return []
 
-        common_markers_block_indent = self.markers_block_indent()
+        common_markers_block_indent = self._markers_block_indent()
         result = []
         for i, piece in enumerate(pieces):
             if (
