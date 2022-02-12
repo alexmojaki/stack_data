@@ -320,7 +320,7 @@ class Line(object):
         else:
             range_start = 0
 
-        range_start = max(range_start, self._markers_block_indent)
+        start = max(range_start, self._markers_block_indent)
         if end == self.lineno:
             try:
                 range_end = node.last_token.end[1]
@@ -331,6 +331,9 @@ class Line(object):
                     return None
         else:
             range_end = len(self.text)
+
+        if start <= range_end:
+            range_start = start
 
         return RangeInLine(range_start, range_end, data)
 
@@ -669,6 +672,12 @@ class FrameInfo(object):
         indents = []
         lines = []
         for i, piece in enumerate(pieces):
+            if (
+                    i == 1
+                    and pieces[0] == self.scope_pieces[0]
+                    and pieces[1] != self.scope_pieces[1]
+            ):
+                return 0
             lines.extend([
                 Line(self, i)
                 for i in piece
@@ -678,8 +687,7 @@ class FrameInfo(object):
                 begin_text = len(line.text) - len(line.text.lstrip())
                 indent = max(line_range.start, begin_text)
                 indents.append(indent)
-        if len(indents) < 2:  # We are not indenting a block
-            return 0
+
         return min(indents) if indents else 0
 
     @cached_property
@@ -701,9 +709,10 @@ class FrameInfo(object):
         if not pieces:
             return []
 
-        common_markers_block_indent = self._markers_block_indent()
+
         result = []
         for i, piece in enumerate(pieces):
+            common_markers_block_indent = self._markers_block_indent()
             if (
                     i == 1
                     and pieces[0] == self.scope_pieces[0]
