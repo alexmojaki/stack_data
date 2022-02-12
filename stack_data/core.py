@@ -297,12 +297,12 @@ class Line(object):
         ex = self.frame_info.executing
         node = ex.node
         if node:
-            rang = self.range_from_node(node, ex)
+            rang = self.range_from_node(node, ex, self._markers_block_indent)
             if rang:
                 return [rang]
         return []
 
-    def range_from_node(self, node: ast.AST, data: Any) -> Optional[RangeInLine]:
+    def range_from_node(self, node: ast.AST, data: Any, executing_block_indent:int=0) -> Optional[RangeInLine]:
         """
         If the given node overlaps with this line, return a RangeInLine
         with the correct start and end and the given data.
@@ -320,7 +320,7 @@ class Line(object):
         else:
             range_start = 0
 
-        start = max(range_start, self._markers_block_indent)
+        range_start = max(range_start, executing_block_indent)
         if end == self.lineno:
             try:
                 range_end = node.last_token.end[1]
@@ -331,9 +331,6 @@ class Line(object):
                     return None
         else:
             range_end = len(self.text)
-
-        if start <= range_end:
-            range_start = start
 
         return RangeInLine(range_start, range_end, data)
 
@@ -672,12 +669,6 @@ class FrameInfo(object):
         indents = []
         lines = []
         for i, piece in enumerate(pieces):
-            if (
-                    i == 1
-                    and pieces[0] == self.scope_pieces[0]
-                    and pieces[1] != self.scope_pieces[1]
-            ):
-                return 0
             lines.extend([
                 Line(self, i)
                 for i in piece
@@ -709,10 +700,9 @@ class FrameInfo(object):
         if not pieces:
             return []
 
-
+        common_markers_block_indent = self._markers_block_indent()
         result = []
         for i, piece in enumerate(pieces):
-            common_markers_block_indent = self._markers_block_indent()
             if (
                     i == 1
                     and pieces[0] == self.scope_pieces[0]
