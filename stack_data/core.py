@@ -217,8 +217,6 @@ class Line(object):
         - is_current: whether this is the line currently being executed by the interpreter
             within this frame.
         - tokens: a list of source tokens in this line
-        - _markers_block_indent: a private attribute used in internal computations
-            to ensure that the markers share a common indentation.
 
     There are several helpers for constructing RangeInLines which can be converted to markers
     using markers_from_ranges which can be passed to .render():
@@ -231,13 +229,11 @@ class Line(object):
             self,
             frame_info: 'FrameInfo',
             lineno: int,
-            _markers_block_indent: int = 0,
     ):
         self.frame_info = frame_info
         self.lineno = lineno
         self.text = frame_info.source.lines[lineno - 1]  # type: str
         self.leading_indent = None  # type: Optional[int]
-        self._markers_block_indent = _markers_block_indent
 
     def __repr__(self):
         return "<{self.__class__.__name__} {self.lineno} (current={self.is_current}) " \
@@ -294,15 +290,22 @@ class Line(object):
         A list of one or zero RangeInLines for the executing node of this frame.
         The list will have one element if the node can be found and it overlaps this line.
         """
+        return self._raw_executing_node_ranges(
+            self.frame_info._executing_node_common_indent
+        )
+
+    def _raw_executing_node_ranges(self, common_indent=0) -> List[RangeInLine]:
         ex = self.frame_info.executing
         node = ex.node
         if node:
-            rang = self.range_from_node(node, ex, self._markers_block_indent)
+            rang = self.range_from_node(node, ex, common_indent)
             if rang:
                 return [rang]
         return []
 
-    def range_from_node(self, node: ast.AST, data: Any, executing_block_indent:int=0) -> Optional[RangeInLine]:
+    def range_from_node(
+        self, node: ast.AST, data: Any, common_indent: int = 0
+    ) -> Optional[RangeInLine]:
         """
         If the given node overlaps with this line, return a RangeInLine
         with the correct start and end and the given data.
@@ -320,7 +323,8 @@ class Line(object):
         else:
             range_start = 0
 
-        range_start = max(range_start, executing_block_indent)
+        range_start = max(range_start, common_indent)
+
         if end == self.lineno:
             try:
                 range_end = node.last_token.end[1]
@@ -655,28 +659,21 @@ class FrameInfo(object):
 
         return pieces
 
-    def _markers_block_indent(self) -> int:
+    @cached_property
+    def _executing_node_common_indent(self) -> int:
         """
         The common minimal indentation shared by the markers intended
         for an exception node that spans multiple lines.
 
         Intended to be used only internally.
         """
-        pieces = self.included_pieces
-        if not pieces:
-            return 0
-
         indents = []
-        lines = []
-        for i, piece in enumerate(pieces):
-            lines.extend([
-                Line(self, i)
-                for i in piece
-            ])
+        lines = [line for line in self.lines if isinstance(line, Line)]
+
         for line in lines:
-            for line_range in line.executing_node_ranges:
+            for rang in line._raw_executing_node_ranges():
                 begin_text = len(line.text) - len(line.text.lstrip())
-                indent = max(line_range.start, begin_text)
+                indent = max(rang.start, begin_text)
                 indents.append(indent)
 
         return min(indents) if indents else 0
@@ -700,7 +697,6 @@ class FrameInfo(object):
         if not pieces:
             return []
 
-        common_markers_block_indent = self._markers_block_indent()
         result = []
         for i, piece in enumerate(pieces):
             if (
@@ -710,10 +706,7 @@ class FrameInfo(object):
             ):
                 result.append(LINE_GAP)
 
-            lines = [
-                Line(self, i, common_markers_block_indent)
-                for i in piece
-            ]  # type: List[Line]
+            lines = [Line(self, i) for i in piece]  # type: List[Line]
             if piece != self.executing_piece:
                 lines = truncate(
                     lines,
