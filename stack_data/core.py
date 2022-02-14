@@ -290,15 +290,22 @@ class Line(object):
         A list of one or zero RangeInLines for the executing node of this frame.
         The list will have one element if the node can be found and it overlaps this line.
         """
+        return self._raw_executing_node_ranges(
+            self.frame_info._executing_node_common_indent
+        )
+
+    def _raw_executing_node_ranges(self, common_indent=0) -> List[RangeInLine]:
         ex = self.frame_info.executing
         node = ex.node
         if node:
-            rang = self.range_from_node(node, ex)
+            rang = self.range_from_node(node, ex, common_indent)
             if rang:
                 return [rang]
         return []
 
-    def range_from_node(self, node: ast.AST, data: Any) -> Optional[RangeInLine]:
+    def range_from_node(
+        self, node: ast.AST, data: Any, common_indent: int = 0
+    ) -> Optional[RangeInLine]:
         """
         If the given node overlaps with this line, return a RangeInLine
         with the correct start and end and the given data.
@@ -315,6 +322,8 @@ class Line(object):
                 range_start = node.col_offset
         else:
             range_start = 0
+
+        range_start = max(range_start, common_indent)
 
         if end == self.lineno:
             try:
@@ -651,6 +660,25 @@ class FrameInfo(object):
         return pieces
 
     @cached_property
+    def _executing_node_common_indent(self) -> int:
+        """
+        The common minimal indentation shared by the markers intended
+        for an exception node that spans multiple lines.
+
+        Intended to be used only internally.
+        """
+        indents = []
+        lines = [line for line in self.lines if isinstance(line, Line)]
+
+        for line in lines:
+            for rang in line._raw_executing_node_ranges():
+                begin_text = len(line.text) - len(line.text.lstrip())
+                indent = max(rang.start, begin_text)
+                indents.append(indent)
+
+        return min(indents) if indents else 0
+
+    @cached_property
     def lines(self) -> List[Union[Line, LineGap]]:
         """
         A list of lines to display, determined by options.
@@ -678,10 +706,7 @@ class FrameInfo(object):
             ):
                 result.append(LINE_GAP)
 
-            lines = [
-                Line(self, i)
-                for i in piece
-            ]  # type: List[Line]
+            lines = [Line(self, i) for i in piece]  # type: List[Line]
             if piece != self.executing_piece:
                 lines = truncate(
                     lines,

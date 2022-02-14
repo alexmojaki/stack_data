@@ -17,7 +17,8 @@ def foo():
             5,
             6
         ][0])
-    result = print_stack()
+    result = print_stack(
+             )
     return result
 
 

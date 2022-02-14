@@ -574,12 +574,12 @@ def test_example():
     result = bar()
     print(result)
     assert result == """\
-bar at line 26
+bar at line 27
 --------------
-  24 | def bar():
-  25 |     <var>names</var> = {}
-  26 >     <exec>exec("result = foo()", globals(), <var>names</var>)</exec>
-  27 |     return <var>names</var>["result"]
+  25 | def bar():
+  26 |     <var>names</var> = {}
+  27 >     <exec>exec("result = foo()", globals(), <var>names</var>)</exec>
+  28 |     return <var>names</var>["result"]
 names = {} 
 
 <module> at line 1
@@ -597,8 +597,9 @@ foo at line 20
 (...)
   18 | <var>            6</var>
   19 | <var>        ][0]</var>)
-  20 >     result = <exec>print_stack()</exec>
-  21 |     return result
+  20 >     result = <exec>print_stack(</exec>
+  21 |              <exec>)</exec>
+  22 |     return result
 [
             1,
             2,
