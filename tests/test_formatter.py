@@ -21,7 +21,7 @@ class BaseFormatter(Formatter):
 
 class MyFormatter(BaseFormatter):
     def format_frame(self, frame):
-        if not frame.filename.endswith(("formatter_example.py", "<string>")):
+        if not frame.filename.endswith(("formatter_example.py", "<string>", "cython_example.pyx")):
             return
         yield from super().format_frame(frame)
 
@@ -70,5 +70,13 @@ def test_example(capsys):
     with check_example(f"f_string_{'old' if sys.version_info[:2] < (3, 8) else 'new'}"):
         try:
             f_string()
+        except Exception:
+            MyFormatter().print_exception()
+
+    from .samples import cython_example
+
+    with check_example("cython_example"):
+        try:
+            cython_example.foo()
         except Exception:
             MyFormatter().print_exception()

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+ File "cython_example.pyx", line 2, in tests.samples.cython_example.foo
+       1 | def foo():
+-->    2 |     bar()
+       3 | 
+ File "cython_example.pyx", line 5, in tests.samples.cython_example.bar
+       2 |     bar()
+       3 | 
+       4 | cdef bar():
+-->    5 |     raise ValueError("bar!")
+ValueError: bar!
