@@ -83,7 +83,10 @@ class Source(executing.Source):
     @cached_property
     def pieces(self) -> List[range]:
         if not self.tree:
-            raise AttributeError("This file doesn't contain valid Python, so .pieces doesn't exist")
+            return [
+                range(i, i + 1)
+                for i in range(1, len(self.lines) + 1)
+            ]
         return list(self._clean_pieces())
 
     @cached_property
@@ -352,7 +355,7 @@ class Line(object):
         If strip_leading_indent is true (the default) then leading spaces
         common to all lines in this frame will be excluded.
         """
-        if pygmented:
+        if pygmented and self.frame_info.scope:
             assert_(not markers, ValueError("Cannot use pygmented with markers"))
             start_line, lines = self.frame_info._pygmented_scope_lines
             result = lines[self.lineno - start_line]
@@ -569,10 +572,12 @@ class FrameInfo(object):
     @cached_property
     def scope_pieces(self) -> List[range]:
         """
-        All the pieces (ranges of lines) contained in this object's .scope.
+        All the pieces (ranges of lines) contained in this object's .scope,
+        unless there is no .scope (because the source isn't valid Python syntax)
+        in which case it returns all the pieces in the source file, each containing one line.
         """
         if not self.scope:
-            return []
+            return self.source.pieces
 
         scope_start, scope_end = line_range(self.scope)
         return [
@@ -619,9 +624,6 @@ class FrameInfo(object):
         """
         The piece (range of lines) containing the line currently being executed
         by the interpreter in this frame.
-
-        Raises an exception if .scope is None, which usually means the source code
-        for this frame is unavailable.
         """
         return only(
             piece
@@ -701,6 +703,7 @@ class FrameInfo(object):
         for i, piece in enumerate(pieces):
             if (
                     i == 1
+                    and self.scope
                     and pieces[0] == self.scope_pieces[0]
                     and pieces[1] != self.scope_pieces[1]
             ):

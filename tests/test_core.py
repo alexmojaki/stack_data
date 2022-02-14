@@ -534,7 +534,6 @@ def test_invalid_source():
     filename = str(samples_dir / "not_code.txt")
     source = Source.for_filename(filename)
     assert not source.tree
-    assert not hasattr(source, "pieces")
     assert not hasattr(source, "tokens_by_lineno")
 
 
