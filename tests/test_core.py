@@ -552,20 +552,20 @@ def test_absolute_filename():
     assert frame_info.filename == full_filename
 
 
-def test_executing_style_defs():
+@pytest.mark.parametrize("expected",
+    [
+        r".c { color: #(999999|ababab); font-style: italic }",
+        r".err { color: #a61717; background-color: #e3d2d2 }",
+        r".c-ExecutingNode { color: #(999999|ababab); font-style: italic; background-color: #ffff00 }",
+        r".err-ExecutingNode { color: #a61717; background-color: #ffff00 }",
+    ]
+)
+def test_executing_style_defs(expected):
     style = style_with_executing_node("native", "bg:#ffff00")
     formatter = HtmlFormatter(style=style)
     style_defs = formatter.get_style_defs()
 
-    expected = """
-    .c { color: #999999; font-style: italic }
-    .err { color: #a61717; background-color: #e3d2d2 }
-    .c-ExecutingNode { color: #999999; font-style: italic; background-color: #ffff00 }
-    .err-ExecutingNode { color: #a61717; background-color: #ffff00 }
-    """.strip().splitlines()
-
-    for line in expected:
-        assert line.strip() in style_defs
+    assert re.search(expected, style_defs)
 
 
 def test_example():
