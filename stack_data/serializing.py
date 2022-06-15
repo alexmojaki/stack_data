@@ -35,6 +35,7 @@ class Serializer:
         html=False,
         chain=True,
         collapse_repeated_frames=True,
+        show_variables=False,
     ):
         if options is None:
             options = Options()
@@ -67,6 +68,7 @@ class Serializer:
         self.chain = chain
         self.options = options
         self.collapse_repeated_frames = collapse_repeated_frames
+        self.show_variables = show_variables
 
     def format_exception(self, e=None) -> List[dict]:
         if e is None:
@@ -140,7 +142,7 @@ class Serializer:
         if not isinstance(frame, FrameInfo):
             frame = FrameInfo(frame, self.options)
 
-        return dict(
+        result = dict(
             name=(
                 frame.executing.code_qualname()
                 if self.use_code_qualname
@@ -148,9 +150,11 @@ class Serializer:
             ),
             filename=frame.filename,
             lineno=frame.lineno,
-            variables=list(self.format_variables(frame)),
             lines=list(self.format_lines(frame.lines)),
         )
+        if self.show_variables:
+            result["variables"] = list(self.format_variables(frame))
+        return result
 
     def format_lines(self, lines):
         for line in lines:

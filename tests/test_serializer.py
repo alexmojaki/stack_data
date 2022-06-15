@@ -24,21 +24,18 @@ class MyFormatter(Serializer):
 def test_example():
     from .samples.formatter_example import bar, format_frame, format_stack1
 
-    formatted_frame = format_frame(MyFormatter())
-    del formatted_frame["variables"]
-
     result = dict(
-        format_frame=formatted_frame,
-        format_stack=format_stack1(MyFormatter()),
+        format_frame=(format_frame(MyFormatter())),
+        format_stack=format_stack1(MyFormatter(show_variables=True)),
     )
 
     try:
         bar()
     except Exception:
         result.update(
-            plain=MyFormatter().format_exception(),
-            pygmented=MyFormatter(pygmented=True).format_exception(),
-            pygmented_html=MyFormatter(pygmented=True, html=True).format_exception(),
+            plain=MyFormatter(show_variables=True).format_exception(),
+            pygmented=MyFormatter(show_variables=True, pygmented=True).format_exception(),
+            pygmented_html=MyFormatter(show_variables=True, pygmented=True, html=True).format_exception(),
         )
 
 
