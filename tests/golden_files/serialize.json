@@ -1,0 +1,1554 @@
+{
+    "format_frame": {
+        "name": "format_frame",
+        "filename": "formatter_example.py",
+        "lineno": 51,
+        "lines": [
+            {
+                "type": "line",
+                "is_current": false,
+                "lineno": 49,
+                "text": "def format_frame(formatter):"
+            },
+            {
+                "type": "line",
+                "is_current": false,
+                "lineno": 50,
+                "text": "    frame = inspect.currentframe()"
+            },
+            {
+                "type": "line",
+                "is_current": true,
+                "lineno": 51,
+                "text": "    return formatter.format_frame(frame)"
+            }
+        ]
+    },
+    "format_stack": [
+        {
+            "type": "frame",
+            "name": "format_stack1",
+            "filename": "formatter_example.py",
+            "lineno": 42,
+            "lines": [
+                {
+                    "type": "line",
+                    "is_current": false,
+                    "lineno": 41,
+                    "text": "def format_stack1(formatter):"
+                },
+                {
+                    "type": "line",
+                    "is_current": true,
+                    "lineno": 42,
+                    "text": "    return format_stack2(formatter)"
+                }
+            ],
+            "variables": [
+                {
+                    "name": "formatter",
+                    "value": "<tests.test_serializer.MyFormatter object at 0xABC>"
+                }
+            ]
+        },
+        {
+            "type": "frame",
+            "name": "format_stack2",
+            "filename": "formatter_example.py",
+            "lineno": 46,
+            "lines": [
+                {
+                    "type": "line",
+                    "is_current": false,
+                    "lineno": 45,
+                    "text": "def format_stack2(formatter):"
+                },
+                {
+                    "type": "line",
+                    "is_current": true,
+                    "lineno": 46,
+                    "text": "    return list(formatter.format_stack())"
+                }
+            ],
+            "variables": [
+                {
+                    "name": "formatter",
+                    "value": "<tests.test_serializer.MyFormatter object at 0xABC>"
+                }
+            ]
+        }
+    ],
+    "plain": [
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 21,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "x = 1"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 10,
+                            "text": "lst = ("
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 11,
+                            "text": "        ["
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 12,
+                            "text": "            x,"
+                        },
+                        {
+                            "type": "line_gap"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 18,
+                            "text": "        + []"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 19,
+                            "text": ")"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 20,
+                            "text": "try:"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 21,
+                            "text": "    return int(str(lst))"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 22,
+                            "text": "except:"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "'[1]'"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "ValueError",
+                "message": "invalid literal for int() with base 10: '[1]'"
+            },
+            "tail": "During handling of the above exception, another exception occurred:"
+        },
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 24,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 21,
+                            "text": "    return int(str(lst))"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 22,
+                            "text": "except:"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 23,
+                            "text": "    try:"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 24,
+                            "text": "        return 1 / 0"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 25,
+                            "text": "    except Exception as e:"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "'[1]'"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "ZeroDivisionError",
+                "message": "division by zero"
+            },
+            "tail": "The above exception was the direct cause of the following exception:"
+        },
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "bar",
+                    "filename": "formatter_example.py",
+                    "lineno": 30,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 29,
+                            "text": "def bar():"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 30,
+                            "text": "    exec(\"foo()\")"
+                        }
+                    ],
+                    "variables": []
+                },
+                {
+                    "type": "frame",
+                    "name": "<module>",
+                    "filename": "<string>",
+                    "lineno": 1,
+                    "lines": [],
+                    "variables": []
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "def foo(n=5):"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "    if n > 0:"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "        return foo(n - 1)"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "    x = 1"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "5"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "4"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "def foo(n=5):"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "    if n > 0:"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "        return foo(n - 1)"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "    x = 1"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "4"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "3"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "repeated_frames",
+                    "frames": [
+                        {
+                            "name": "foo",
+                            "lineno": 8,
+                            "count": 2
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "def foo(n=5):"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "    if n > 0:"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "        return foo(n - 1)"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "    x = 1"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "1"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 26,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 23,
+                            "text": "try:"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 24,
+                            "text": "    return 1 / 0"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 25,
+                            "text": "except Exception as e:"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 26,
+                            "text": "    raise TypeError from e"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "'[1]'"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "TypeError",
+                "message": ""
+            },
+            "tail": ""
+        }
+    ],
+    "pygmented": [
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 21,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "\u001b[38;5;15m\u001b[39m\u001b[38;5;15mx\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m=\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m1\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 10,
+                            "text": "\u001b[38;5;15m\u001b[39m\u001b[38;5;15mlst\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m=\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15m(\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 11,
+                            "text": "\u001b[38;5;15m        \u001b[39m\u001b[38;5;15m[\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 12,
+                            "text": "\u001b[38;5;15m            \u001b[39m\u001b[38;5;15mx\u001b[39m\u001b[38;5;15m,\u001b[39m"
+                        },
+                        {
+                            "type": "line_gap"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 18,
+                            "text": "\u001b[38;5;15m        \u001b[39m\u001b[38;5;197m+\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15m[\u001b[39m\u001b[38;5;15m]\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 19,
+                            "text": "\u001b[38;5;15m\u001b[39m\u001b[38;5;15m)\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 20,
+                            "text": "\u001b[38;5;15m\u001b[39m\u001b[38;5;81mtry\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 21,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mreturn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15;48;5;24mint\u001b[39;49m\u001b[38;5;15;48;5;24m(\u001b[39;49m\u001b[38;5;15;48;5;24mstr\u001b[39;49m\u001b[38;5;15;48;5;24m(\u001b[39;49m\u001b[38;5;15;48;5;24mlst\u001b[39;49m\u001b[38;5;15;48;5;24m)\u001b[39;49m\u001b[38;5;15;48;5;24m)\u001b[39;49m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 22,
+                            "text": "\u001b[38;5;15m\u001b[39m\u001b[38;5;81mexcept\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "'[1]'"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "ValueError",
+                "message": "invalid literal for int() with base 10: '[1]'"
+            },
+            "tail": "During handling of the above exception, another exception occurred:"
+        },
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 24,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 21,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mreturn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15mint\u001b[39m\u001b[38;5;15m(\u001b[39m\u001b[38;5;15mstr\u001b[39m\u001b[38;5;15m(\u001b[39m\u001b[38;5;15mlst\u001b[39m\u001b[38;5;15m)\u001b[39m\u001b[38;5;15m)\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 22,
+                            "text": "\u001b[38;5;15m\u001b[39m\u001b[38;5;81mexcept\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 23,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mtry\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 24,
+                            "text": "\u001b[38;5;15m        \u001b[39m\u001b[38;5;81mreturn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141;48;5;24m1\u001b[39;49m\u001b[38;5;15;48;5;24m \u001b[39;49m\u001b[38;5;197;48;5;24m/\u001b[39;49m\u001b[38;5;15;48;5;24m \u001b[39;49m\u001b[38;5;141;48;5;24m0\u001b[39;49m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 25,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mexcept\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;148mException\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;81mas\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15me\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "'[1]'"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "ZeroDivisionError",
+                "message": "division by zero"
+            },
+            "tail": "The above exception was the direct cause of the following exception:"
+        },
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "bar",
+                    "filename": "formatter_example.py",
+                    "lineno": 30,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 29,
+                            "text": "\u001b[38;5;81mdef\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;148mbar\u001b[39m\u001b[38;5;15m(\u001b[39m\u001b[38;5;15m)\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 30,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;15;48;5;24mexec\u001b[39;49m\u001b[38;5;15;48;5;24m(\u001b[39;49m\u001b[38;5;186;48;5;24m\"\u001b[39;49m\u001b[38;5;186;48;5;24mfoo()\u001b[39;49m\u001b[38;5;186;48;5;24m\"\u001b[39;49m\u001b[38;5;15;48;5;24m)\u001b[39;49m"
+                        }
+                    ],
+                    "variables": []
+                },
+                {
+                    "type": "frame",
+                    "name": "<module>",
+                    "filename": "<string>",
+                    "lineno": 1,
+                    "lines": [],
+                    "variables": []
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "\u001b[38;5;81mdef\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;148mfoo\u001b[39m\u001b[38;5;15m(\u001b[39m\u001b[38;5;15mn\u001b[39m\u001b[38;5;197m=\u001b[39m\u001b[38;5;141m5\u001b[39m\u001b[38;5;15m)\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mif\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15mn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m>\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m0\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "\u001b[38;5;15m        \u001b[39m\u001b[38;5;81mreturn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15;48;5;24mfoo\u001b[39;49m\u001b[38;5;15;48;5;24m(\u001b[39;49m\u001b[38;5;15;48;5;24mn\u001b[39;49m\u001b[38;5;15;48;5;24m \u001b[39;49m\u001b[38;5;197;48;5;24m-\u001b[39;49m\u001b[38;5;15;48;5;24m \u001b[39;49m\u001b[38;5;141;48;5;24m1\u001b[39;49m\u001b[38;5;15;48;5;24m)\u001b[39;49m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;15mx\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m=\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m1\u001b[39m"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "5"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "4"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "\u001b[38;5;81mdef\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;148mfoo\u001b[39m\u001b[38;5;15m(\u001b[39m\u001b[38;5;15mn\u001b[39m\u001b[38;5;197m=\u001b[39m\u001b[38;5;141m5\u001b[39m\u001b[38;5;15m)\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mif\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15mn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m>\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m0\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "\u001b[38;5;15m        \u001b[39m\u001b[38;5;81mreturn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15;48;5;24mfoo\u001b[39;49m\u001b[38;5;15;48;5;24m(\u001b[39;49m\u001b[38;5;15;48;5;24mn\u001b[39;49m\u001b[38;5;15;48;5;24m \u001b[39;49m\u001b[38;5;197;48;5;24m-\u001b[39;49m\u001b[38;5;15;48;5;24m \u001b[39;49m\u001b[38;5;141;48;5;24m1\u001b[39;49m\u001b[38;5;15;48;5;24m)\u001b[39;49m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;15mx\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m=\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m1\u001b[39m"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "4"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "3"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "repeated_frames",
+                    "frames": [
+                        {
+                            "name": "foo",
+                            "lineno": 8,
+                            "count": 2
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "\u001b[38;5;81mdef\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;148mfoo\u001b[39m\u001b[38;5;15m(\u001b[39m\u001b[38;5;15mn\u001b[39m\u001b[38;5;197m=\u001b[39m\u001b[38;5;141m5\u001b[39m\u001b[38;5;15m)\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mif\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15mn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m>\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m0\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "\u001b[38;5;15m        \u001b[39m\u001b[38;5;81mreturn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15;48;5;24mfoo\u001b[39;49m\u001b[38;5;15;48;5;24m(\u001b[39;49m\u001b[38;5;15;48;5;24mn\u001b[39;49m\u001b[38;5;15;48;5;24m \u001b[39;49m\u001b[38;5;197;48;5;24m-\u001b[39;49m\u001b[38;5;15;48;5;24m \u001b[39;49m\u001b[38;5;141;48;5;24m1\u001b[39;49m\u001b[38;5;15;48;5;24m)\u001b[39;49m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;15mx\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m=\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m1\u001b[39m"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "1"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 26,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 23,
+                            "text": "\u001b[38;5;15m\u001b[39m\u001b[38;5;81mtry\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 24,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mreturn\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m1\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197m/\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;141m0\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 25,
+                            "text": "\u001b[38;5;15m\u001b[39m\u001b[38;5;81mexcept\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;148mException\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;81mas\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15me\u001b[39m\u001b[38;5;15m:\u001b[39m"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 26,
+                            "text": "\u001b[38;5;15m    \u001b[39m\u001b[38;5;81mraise\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;148mTypeError\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;197mfrom\u001b[39m\u001b[38;5;15m \u001b[39m\u001b[38;5;15me\u001b[39m"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n > 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "'[1]'"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "TypeError",
+                "message": ""
+            },
+            "tail": ""
+        }
+    ],
+    "pygmented_html": [
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 21,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "<span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 10,
+                            "text": "<span class=\"n\">lst</span> <span class=\"o\">=</span> <span class=\"p\">(</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 11,
+                            "text": "        <span class=\"p\">[</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 12,
+                            "text": "            <span class=\"n\">x</span><span class=\"p\">,</span>"
+                        },
+                        {
+                            "type": "line_gap"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 18,
+                            "text": "        <span class=\"o\">+</span> <span class=\"p\">[]</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 19,
+                            "text": "<span class=\"p\">)</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 20,
+                            "text": "<span class=\"k\">try</span><span class=\"p\">:</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 21,
+                            "text": "    <span class=\"k\">return</span> <span class=\"nb nb-ExecutingNode\">int</span><span class=\"p p-ExecutingNode\">(</span><span class=\"nb nb-ExecutingNode\">str</span><span class=\"p p-ExecutingNode\">(</span><span class=\"n n-ExecutingNode\">lst</span><span class=\"p p-ExecutingNode\">))</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 22,
+                            "text": "<span class=\"k\">except</span><span class=\"p\">:</span>"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n &gt; 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "&#x27;[1]&#x27;"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "ValueError",
+                "message": "invalid literal for int() with base 10: '[1]'"
+            },
+            "tail": "During handling of the above exception, another exception occurred:"
+        },
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 24,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 21,
+                            "text": "    <span class=\"k\">return</span> <span class=\"nb\">int</span><span class=\"p\">(</span><span class=\"nb\">str</span><span class=\"p\">(</span><span class=\"n\">lst</span><span class=\"p\">))</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 22,
+                            "text": "<span class=\"k\">except</span><span class=\"p\">:</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 23,
+                            "text": "    <span class=\"k\">try</span><span class=\"p\">:</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 24,
+                            "text": "        <span class=\"k\">return</span> <span class=\"mi mi-ExecutingNode\">1</span><span class=\" -ExecutingNode\"> </span><span class=\"o o-ExecutingNode\">/</span><span class=\" -ExecutingNode\"> </span><span class=\"mi mi-ExecutingNode\">0</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 25,
+                            "text": "    <span class=\"k\">except</span> <span class=\"ne\">Exception</span> <span class=\"k\">as</span> <span class=\"n\">e</span><span class=\"p\">:</span>"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n &gt; 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "&#x27;[1]&#x27;"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "ZeroDivisionError",
+                "message": "division by zero"
+            },
+            "tail": "The above exception was the direct cause of the following exception:"
+        },
+        {
+            "frames": [
+                {
+                    "type": "frame",
+                    "name": "bar",
+                    "filename": "formatter_example.py",
+                    "lineno": 30,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 29,
+                            "text": "<span class=\"k\">def</span> <span class=\"nf\">bar</span><span class=\"p\">():</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 30,
+                            "text": "    <span class=\"n n-ExecutingNode\">exec</span><span class=\"p p-ExecutingNode\">(</span><span class=\"s2 s2-ExecutingNode\">&quot;foo()&quot;</span><span class=\"p p-ExecutingNode\">)</span>"
+                        }
+                    ],
+                    "variables": []
+                },
+                {
+                    "type": "frame",
+                    "name": "<module>",
+                    "filename": "<string>",
+                    "lineno": 1,
+                    "lines": [],
+                    "variables": []
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "<span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">n</span><span class=\"o\">=</span><span class=\"mi\">5</span><span class=\"p\">):</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "    <span class=\"k\">if</span> <span class=\"n\">n</span> <span class=\"o\">&gt;</span> <span class=\"mi\">0</span><span class=\"p\">:</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "        <span class=\"k\">return</span> <span class=\"n n-ExecutingNode\">foo</span><span class=\"p p-ExecutingNode\">(</span><span class=\"n n-ExecutingNode\">n</span><span class=\" -ExecutingNode\"> </span><span class=\"o o-ExecutingNode\">-</span><span class=\" -ExecutingNode\"> </span><span class=\"mi mi-ExecutingNode\">1</span><span class=\"p p-ExecutingNode\">)</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "5"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "4"
+                        },
+                        {
+                            "name": "n &gt; 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "<span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">n</span><span class=\"o\">=</span><span class=\"mi\">5</span><span class=\"p\">):</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "    <span class=\"k\">if</span> <span class=\"n\">n</span> <span class=\"o\">&gt;</span> <span class=\"mi\">0</span><span class=\"p\">:</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "        <span class=\"k\">return</span> <span class=\"n n-ExecutingNode\">foo</span><span class=\"p p-ExecutingNode\">(</span><span class=\"n n-ExecutingNode\">n</span><span class=\" -ExecutingNode\"> </span><span class=\"o o-ExecutingNode\">-</span><span class=\" -ExecutingNode\"> </span><span class=\"mi mi-ExecutingNode\">1</span><span class=\"p p-ExecutingNode\">)</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "4"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "3"
+                        },
+                        {
+                            "name": "n &gt; 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "repeated_frames",
+                    "frames": [
+                        {
+                            "name": "foo",
+                            "lineno": 8,
+                            "count": 2
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 8,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 6,
+                            "text": "<span class=\"k\">def</span> <span class=\"nf\">foo</span><span class=\"p\">(</span><span class=\"n\">n</span><span class=\"o\">=</span><span class=\"mi\">5</span><span class=\"p\">):</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 7,
+                            "text": "    <span class=\"k\">if</span> <span class=\"n\">n</span> <span class=\"o\">&gt;</span> <span class=\"mi\">0</span><span class=\"p\">:</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 8,
+                            "text": "        <span class=\"k\">return</span> <span class=\"n n-ExecutingNode\">foo</span><span class=\"p p-ExecutingNode\">(</span><span class=\"n n-ExecutingNode\">n</span><span class=\" -ExecutingNode\"> </span><span class=\"o o-ExecutingNode\">-</span><span class=\" -ExecutingNode\"> </span><span class=\"mi mi-ExecutingNode\">1</span><span class=\"p p-ExecutingNode\">)</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 9,
+                            "text": "    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "n",
+                            "value": "1"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n &gt; 0",
+                            "value": "True"
+                        }
+                    ]
+                },
+                {
+                    "type": "frame",
+                    "name": "foo",
+                    "filename": "formatter_example.py",
+                    "lineno": 26,
+                    "lines": [
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 23,
+                            "text": "<span class=\"k\">try</span><span class=\"p\">:</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 24,
+                            "text": "    <span class=\"k\">return</span> <span class=\"mi\">1</span> <span class=\"o\">/</span> <span class=\"mi\">0</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": false,
+                            "lineno": 25,
+                            "text": "<span class=\"k\">except</span> <span class=\"ne\">Exception</span> <span class=\"k\">as</span> <span class=\"n\">e</span><span class=\"p\">:</span>"
+                        },
+                        {
+                            "type": "line",
+                            "is_current": true,
+                            "lineno": 26,
+                            "text": "    <span class=\"k\">raise</span> <span class=\"ne\">TypeError</span> <span class=\"kn\">from</span> <span class=\"nn\">e</span>"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "[\n                x,\n            ]",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "[\n                x,\n            ]\n            + []\n            + []\n            + []\n            + []\n            + []",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "lst",
+                            "value": "[1]"
+                        },
+                        {
+                            "name": "n",
+                            "value": "0"
+                        },
+                        {
+                            "name": "n - 1",
+                            "value": "-1"
+                        },
+                        {
+                            "name": "n &gt; 0",
+                            "value": "False"
+                        },
+                        {
+                            "name": "str(lst)",
+                            "value": "&#x27;[1]&#x27;"
+                        },
+                        {
+                            "name": "x",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ],
+            "exception": {
+                "type": "TypeError",
+                "message": ""
+            },
+            "tail": ""
+        }
+    ]
+}

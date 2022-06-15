@@ -48,7 +48,7 @@ def format_stack2(formatter):
 
 def format_frame(formatter):
     frame = inspect.currentframe()
-    return list(formatter.format_frame(frame))
+    return formatter.format_frame(frame)
 
 
 def f_string():
