@@ -61,6 +61,20 @@ def f_string():
     }"""
 
 
+def block_right():
+    nb = len(letter
+             for letter
+               in
+             "words")
+
+
+def block_left():
+    nb_characters = len(letter
+             for letter
+               in
+             "words")
+
+
 if __name__ == '__main__':
     try:
         bar()
