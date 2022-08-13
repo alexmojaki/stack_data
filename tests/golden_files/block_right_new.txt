@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+ File "formatter_example.py", line 65, in block_right
+      64 | def block_right():
+-->   65 |     nb = len(letter
+                    ^^^^^^^^^^
+      66 |              for letter
+                        ^^^^^^^^^^
+      67 |                in
+                        ^^^^
+      68 |              "words")
+                        ^^^^^^^^
+TypeError: object of type 'generator' has no len()

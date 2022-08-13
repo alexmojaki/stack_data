@@ -73,6 +73,20 @@ def test_example(capsys):
         except Exception:
             MyFormatter().print_exception()
 
+    from .samples.formatter_example import block_right, block_left
+
+    with check_example(f"block_right_{'old' if sys.version_info[:2] < (3, 8) else 'new'}"):
+        try:
+            block_right()
+        except Exception:
+            MyFormatter().print_exception()
+
+    with check_example(f"block_left_{'old' if sys.version_info[:2] < (3, 8) else 'new'}"):
+        try:
+            block_left()
+        except Exception:
+            MyFormatter().print_exception()
+
     from .samples import cython_example
 
     with check_example("cython_example"):
