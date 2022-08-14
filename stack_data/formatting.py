@@ -27,7 +27,8 @@ class Formatter:
             strip_leading_indent=True,
             html=False,
             chain=True,
-            collapse_repeated_frames=True
+            collapse_repeated_frames=True,
+            skip_blank = True
     ):
         if options is None:
             options = Options()
@@ -64,6 +65,8 @@ class Formatter:
         self.chain = chain
         self.options = options
         self.collapse_repeated_frames = collapse_repeated_frames
+        self.skip_blank = skip_blank
+        self.last_lineno_printed = None
 
     def set_hook(self):
         def excepthook(_etype, evalue, _tb):
@@ -137,10 +140,14 @@ class Formatter:
 
         for line in frame.lines:
             if isinstance(line, Line):
+                if self.show_linenos and not self.skip_blank:
+                    yield self.perhaps_add_blank_lines(line)
+                    self.last_lineno_printed = line.lineno
                 yield self.format_line(line)
             else:
                 assert_(line is LINE_GAP)
                 yield self.line_gap_string + "\n"
+                self.last_lineno_printed = None
 
         if self.show_variables:
             try:
@@ -189,8 +196,24 @@ class Formatter:
                         + self.executing_node_underline * (end - start)
                         + "\n"
                 )
-
         return result
+
+
+    def perhaps_add_blank_lines(self, line):
+        if self.last_lineno_printed is None:
+            return ""
+        gap = line.lineno - self.last_lineno_printed
+        if line.executing_node_ranges:
+             self.last_lineno_printed = None
+        if gap <= 1:
+            return ""
+        leading_space = " " * (len(self.current_line_indicator) + 1)
+        if gap == 2:
+            result = leading_space + "{:4} |\n".format(self.last_lineno_printed + 1)
+        else:
+            result = leading_space + "   : |\n"
+        return result
+
 
     def format_variables(self, frame_info: FrameInfo) -> Iterable[str]:
         for var in sorted(frame_info.variables, key=lambda v: v.name):
