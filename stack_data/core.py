@@ -336,6 +336,8 @@ class Line(object):
                     return None
         else:
             range_end = len(self.text)
+        if range_start == range_end == 0:
+            return None
 
         return RangeInLine(range_start, range_end, data)
 
