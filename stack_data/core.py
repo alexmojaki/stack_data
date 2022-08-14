@@ -171,13 +171,15 @@ class Options:
             after: int = 1,
             include_signature: bool = False,
             max_lines_per_piece: int = 6,
-            pygments_formatter=None
+            pygments_formatter=None,
+            skip_blank = True
     ):
         self.before = before
         self.after = after
         self.include_signature = include_signature
         self.max_lines_per_piece = max_lines_per_piece
         self.pygments_formatter = pygments_formatter
+        self.skip_blank = skip_blank
 
     def __repr__(self):
         keys = sorted(self.__dict__)
@@ -200,6 +202,15 @@ class LineGap(object):
 
 
 LINE_GAP = LineGap()
+
+
+class BlankLines:
+    """
+    Represents one or more consecutive blank lines between executing pieces.
+    """
+    def __init__(self, begin_lineno, end_lineno):
+        self.begin_lineno = begin_lineno
+        self.end_lineno = end_lineno
 
 
 class Line(object):
@@ -523,6 +534,10 @@ class FrameInfo(object):
         self.code = frame.f_code
         self.options = options or Options()  # type: Options
         self.source = self.executing.source  # type: Source
+        if hasattr(self.options, "skip_blank"):
+            self.skip_blank = self.options.skip_blank
+        else:
+            self.skip_blank = True
 
     def __repr__(self):
         return "{self.__class__.__name__}({self.frame})".format(self=self)
@@ -735,6 +750,16 @@ class FrameInfo(object):
         leading_indent = len(real_lines[0].text) - len(dedented_lines[0])
         for line in real_lines:
             line.leading_indent = leading_indent
+
+        if not self.skip_blank:
+            new_lines = [result[0]]
+            for line in result[1:]:
+                prev_line = new_lines[-1]
+                if (isinstance(prev_line, Line) and isinstance(line, Line)
+                    and line.lineno - prev_line.lineno > 1):
+                    new_lines.append(BlankLines(prev_line.lineno+1, line.lineno-1))
+                new_lines.append(line)
+            return new_lines
 
         return result
 

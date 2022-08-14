@@ -207,7 +207,7 @@ def test_invalid_converter():
 def test_variables():
     options = Options(before=1, after=0)
     assert repr(options) == 'Options(after=0, before=1, include_signature=False, ' \
-                            'max_lines_per_piece=6, pygments_formatter=None)'
+                            'max_lines_per_piece=6, pygments_formatter=None, skip_blank=True)'
 
     def foo(arg, _arg2: str = None, *_args, **_kwargs):
         y = 123986
