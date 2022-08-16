@@ -726,7 +726,7 @@ class FrameInfo(object):
         return min(indents[1:])
 
     @cached_property
-    def lines(self) -> List[Union[Line, LineGap]]:
+    def lines(self) -> List[Union[Line, LineGap, EmptyLine, BlankLineMark]]:
         """
         A list of lines to display, determined by options.
         The objects yielded either have type Line or are the singleton LINE_GAP.
@@ -744,6 +744,8 @@ class FrameInfo(object):
         if not pieces:
             return []
 
+        add_empty_lines = self.blank_lines in (BlankLines.VISIBLE, BlankLines.LINE_NUMBER)
+        prev_piece = None
         result = []
         for i, piece in enumerate(pieces):
             if (
@@ -753,6 +755,14 @@ class FrameInfo(object):
                     and pieces[1] != self.scope_pieces[1]
             ):
                 result.append(LINE_GAP)
+            elif (prev_piece and add_empty_lines and piece.start > prev_piece.stop):
+                lines = []
+                if self.blank_lines == BlankLines.LINE_NUMBER:
+                    lines.append(BlankLineMark(prev_piece.stop, piece.start-1))
+                else:  # BlankLines.VISIBLE
+                    for lineno in range(prev_piece.stop, piece.start):
+                        lines.append(EmptyLine(self, lineno))
+                result.extend(lines)
 
             lines = [Line(self, i) for i in piece]  # type: List[Line]
             if piece != self.executing_piece:
@@ -762,6 +772,7 @@ class FrameInfo(object):
                     middle=[LINE_GAP],
                 )
             result.extend(lines)
+            prev_piece = piece
 
         real_lines = [
             line
@@ -777,29 +788,6 @@ class FrameInfo(object):
         leading_indent = len(real_lines[0].text) - len(dedented_lines[0])
         for line in real_lines:
             line.leading_indent = leading_indent
-
-        if self.blank_lines == BlankLines.LINE_NUMBER:
-            new_lines = [result[0]]
-            for line in result[1:]:
-                prev_line = new_lines[-1]
-                if (isinstance(prev_line, Line) and isinstance(line, Line)
-                    and line.lineno - prev_line.lineno > 1):
-                    new_lines.append(BlankLineMark(prev_line.lineno+1, line.lineno-1))
-                new_lines.append(line)
-            return new_lines
-
-        if self.blank_lines == BlankLines.VISIBLE:
-            new_lines = [result[0]]
-            for line in result[1:]:
-                prev_line = new_lines[-1]
-                if (isinstance(prev_line, Line) and isinstance(line, Line)
-                    and line.lineno - prev_line.lineno > 1):
-                    for lineno in range(prev_line.lineno+1, line.lineno):
-                        new_lines.append(EmptyLine(line.frame_info, lineno))
-                new_lines.append(line)
-            return new_lines
-
-
         return result
 
     @cached_property
