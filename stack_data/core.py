@@ -219,6 +219,11 @@ class BlankLineMark:
         self.end_lineno = end_lineno
 
 
+class EmptyLine:
+    def __init__(self, lineno):
+        self.lineno = lineno
+
+
 class Line(object):
     """
     A single line of source code for a particular stack frame.
@@ -766,6 +771,18 @@ class FrameInfo(object):
                     new_lines.append(BlankLineMark(prev_line.lineno+1, line.lineno-1))
                 new_lines.append(line)
             return new_lines
+
+        if self.blank_lines == BlankLines.VISIBLE:
+            new_lines = [result[0]]
+            for line in result[1:]:
+                prev_line = new_lines[-1]
+                if (isinstance(prev_line, Line) and isinstance(line, Line)
+                    and line.lineno - prev_line.lineno > 1):
+                    for lineno in range(prev_line.lineno+1, line.lineno):
+                        new_lines.append(EmptyLine(lineno))
+                new_lines.append(line)
+            return new_lines
+
 
         return result
 

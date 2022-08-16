@@ -4,7 +4,8 @@ import traceback
 from types import FrameType, TracebackType
 from typing import Union, Iterable
 
-from stack_data import style_with_executing_node, Options, Line, FrameInfo, LINE_GAP, Variable, RepeatedFrames, BlankLineMark
+from stack_data import (style_with_executing_node, Options, Line, FrameInfo, LINE_GAP,
+                       Variable, RepeatedFrames, BlankLineMark, EmptyLine)
 from stack_data.utils import assert_
 
 
@@ -140,6 +141,8 @@ class Formatter:
                 yield self.format_line(line)
             elif isinstance(line, BlankLineMark) and self.show_linenos:
                 yield self.format_blank_lines(line)
+            elif isinstance(line, EmptyLine):
+                yield self.format_empty_line(line)
             else:
                 assert_(line is LINE_GAP)
                 yield self.line_gap_string + "\n"
@@ -198,11 +201,20 @@ class Formatter:
         result = ""
         if self.current_line_indicator:
             result = " " * len(self.current_line_indicator)
-        result = result or "   "
+        else:
+            result = "   "
         if blank_line.begin_lineno == blank_line.end_lineno:
             return result + " {:4} |\n".format(blank_line.begin_lineno)
         return result + "    :\n"
 
+    def format_empty_line(self, line: Line) -> str:
+        result = ""
+        if self.show_linenos:
+            if self.current_line_indicator:
+                result = " " * len(self.current_line_indicator) + " "
+            result += "{:4} | ".format(line.lineno)
+
+        return result + "\n"
 
     def format_variables(self, frame_info: FrameInfo) -> Iterable[str]:
         for var in sorted(frame_info.variables, key=lambda v: v.name):
