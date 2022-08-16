@@ -5,7 +5,7 @@ from types import FrameType, TracebackType
 from typing import Union, Iterable
 
 from stack_data import (style_with_executing_node, Options, Line, FrameInfo, LINE_GAP,
-                       Variable, RepeatedFrames, BlankLineMark, BlankLines)
+                       Variable, RepeatedFrames, BlankLineRange, BlankLines)
 from stack_data.utils import assert_
 
 
@@ -22,6 +22,7 @@ class Formatter:
             executing_node_underline="^",
             current_line_indicator="-->",
             line_gap_string="(...)",
+            line_number_gap_string=":",
             show_variables=False,
             use_code_qualname=True,
             show_linenos=True,
@@ -57,6 +58,7 @@ class Formatter:
         self.executing_node_underline = executing_node_underline
         self.current_line_indicator = current_line_indicator or ""
         self.line_gap_string = line_gap_string
+        self.line_number_gap_string = line_number_gap_string
         self.show_variables = show_variables
         self.show_linenos = show_linenos
         self.use_code_qualname = use_code_qualname
@@ -143,7 +145,7 @@ class Formatter:
         for line in frame.lines:
             if isinstance(line, Line):
                 yield self.format_line(line)
-            elif isinstance(line, BlankLineMark):
+            elif isinstance(line, BlankLineRange):
                 yield self.format_blank_lines_linenumbers(line)
             else:
                 assert_(line is LINE_GAP)
@@ -191,23 +193,26 @@ class Formatter:
             for line_range in line.executing_node_ranges:
                 start = line_range.start - line.leading_indent
                 end = line_range.end - line.leading_indent
-                result += (
-                        " " * (start + len(prefix))
-                        + self.executing_node_underline * (end - start)
-                        + "\n"
-                )
+                # if end <= start, we have an empty line inside a highlighted
+                # block of code. In this case, we need to avoid inserting
+                # an extra blank line with no markers present.
+                if end > start:
+                    result += (
+                            " " * (start + len(prefix))
+                            + self.executing_node_underline * (end - start)
+                            + "\n"
+                    )
         return result
 
 
     def format_blank_lines_linenumbers(self, blank_line):
-        result = ""
         if self.current_line_indicator:
             result = " " * len(self.current_line_indicator)
         else:
             result = "   "
         if blank_line.begin_lineno == blank_line.end_lineno:
             return result + " {:4} |\n".format(blank_line.begin_lineno)
-        return result + "    :\n"
+        return result + "    {}\n".format(self.line_number_gap_string)
 
 
     def format_variables(self, frame_info: FrameInfo) -> Iterable[str]:

@@ -210,11 +210,12 @@ class LineGap(object):
 LINE_GAP = LineGap()
 
 
-class BlankLineMark:
+class BlankLineRange:
     """
-    Represents one or more consecutive blank lines between executing pieces.
+    Records the line number range for blank lines gaps between executing pieces.
+    For a single blank line, begin_lineno == end_lineno.
     """
-    def __init__(self, begin_lineno, end_lineno):
+    def __init__(self, begin_lineno: int, end_lineno: int):
         self.begin_lineno = begin_lineno
         self.end_lineno = end_lineno
 
@@ -354,6 +355,9 @@ class Line(object):
         else:
             range_end = len(self.text)
         if range_start == range_end == 0:
+            # This is an empty line. If it were included, it would result
+            # in a value of zero for the common indentation assigned to
+            # a block of code.
             return None
 
         return RangeInLine(range_start, range_end, data)
@@ -407,6 +411,7 @@ class Line(object):
 
 
 class EmptyLine(Line):
+    "An EmptyLine is a Line with no text content."
     def __init__(
             self,
             frame_info: 'FrameInfo',
@@ -726,10 +731,11 @@ class FrameInfo(object):
         return min(indents[1:])
 
     @cached_property
-    def lines(self) -> List[Union[Line, LineGap, EmptyLine, BlankLineMark]]:
+    def lines(self) -> List[Union[Line, LineGap, EmptyLine, BlankLineRange]]:
         """
         A list of lines to display, determined by options.
-        The objects yielded either have type Line or are the singleton LINE_GAP.
+        The objects yielded either have type Line, EmptyLine, BlankLineRange
+        or are the singleton LINE_GAP.
         Always check the type that you're dealing with when iterating.
 
         LINE_GAP can be created in two ways:
@@ -756,9 +762,9 @@ class FrameInfo(object):
             ):
                 result.append(LINE_GAP)
             elif (prev_piece and add_empty_lines and piece.start > prev_piece.stop):
-                lines = []
+                lines = []  # type: List[Union[EmptyLine, BlankLineRange]]
                 if self.blank_lines == BlankLines.LINE_NUMBER:
-                    lines.append(BlankLineMark(prev_piece.stop, piece.start-1))
+                    lines.append(BlankLineRange(prev_piece.stop, piece.start-1))
                 else:  # BlankLines.VISIBLE
                     for lineno in range(prev_piece.stop, piece.start):
                         lines.append(EmptyLine(self, lineno))
