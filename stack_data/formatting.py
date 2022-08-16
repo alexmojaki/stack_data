@@ -5,7 +5,7 @@ from types import FrameType, TracebackType
 from typing import Union, Iterable
 
 from stack_data import (style_with_executing_node, Options, Line, FrameInfo, LINE_GAP,
-                       Variable, RepeatedFrames, BlankLineMark, EmptyLine)
+                       Variable, RepeatedFrames, BlankLineMark, BlankLines)
 from stack_data.utils import assert_
 
 
@@ -65,6 +65,10 @@ class Formatter:
         self.chain = chain
         self.options = options
         self.collapse_repeated_frames = collapse_repeated_frames
+        if not self.show_linenos and self.options.blank_lines == BlankLines.LINE_NUMBER:
+            raise ValueError(
+                "BlankLines.LINE_NUMBER option can only be used when show_linenos=True"
+            )
 
     def set_hook(self):
         def excepthook(_etype, evalue, _tb):
@@ -139,8 +143,8 @@ class Formatter:
         for line in frame.lines:
             if isinstance(line, Line):
                 yield self.format_line(line)
-            elif isinstance(line, BlankLineMark) and self.show_linenos:
-                yield self.format_blank_lines(line)
+            elif isinstance(line, BlankLineMark):
+                yield self.format_blank_lines_linenumbers(line)
             else:
                 assert_(line is LINE_GAP)
                 yield self.line_gap_string + "\n"
@@ -195,7 +199,7 @@ class Formatter:
         return result
 
 
-    def format_blank_lines(self, blank_line):
+    def format_blank_lines_linenumbers(self, blank_line):
         result = ""
         if self.current_line_indicator:
             result = " " * len(self.current_line_indicator)
