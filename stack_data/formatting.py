@@ -141,8 +141,6 @@ class Formatter:
                 yield self.format_line(line)
             elif isinstance(line, BlankLineMark) and self.show_linenos:
                 yield self.format_blank_lines(line)
-            elif isinstance(line, EmptyLine):
-                yield self.format_empty_line(line)
             else:
                 assert_(line is LINE_GAP)
                 yield self.line_gap_string + "\n"
@@ -207,14 +205,6 @@ class Formatter:
             return result + " {:4} |\n".format(blank_line.begin_lineno)
         return result + "    :\n"
 
-    def format_empty_line(self, line: Line) -> str:
-        result = ""
-        if self.show_linenos:
-            if self.current_line_indicator:
-                result = " " * len(self.current_line_indicator) + " "
-            result += "{:4} | ".format(line.lineno)
-
-        return result + "\n"
 
     def format_variables(self, frame_info: FrameInfo) -> Iterable[str]:
         for var in sorted(frame_info.variables, key=lambda v: v.name):

@@ -219,11 +219,6 @@ class BlankLineMark:
         self.end_lineno = end_lineno
 
 
-class EmptyLine:
-    def __init__(self, lineno):
-        self.lineno = lineno
-
-
 class Line(object):
     """
     A single line of source code for a particular stack frame.
@@ -410,6 +405,27 @@ class Line(object):
             start = max(marker.position, original_start)
         return ''.join(parts)
 
+
+class EmptyLine(Line):
+    def __init__(
+            self,
+            frame_info: 'FrameInfo',
+            lineno: int,
+    ):
+        self.frame_info = frame_info
+        self.lineno = lineno
+        self.text = ''
+        # self.leading_indent = None  # type: Optional[int]
+
+    def render(
+            self,
+            markers: Iterable[MarkerInLine] = (),
+            *,
+            strip_leading_indent: bool = True,
+            pygmented: bool = False,
+            escape_html: bool = False
+    ) -> str:
+        return ''
 
 def markers_from_ranges(
         ranges: Iterable[RangeInLine],
@@ -779,7 +795,7 @@ class FrameInfo(object):
                 if (isinstance(prev_line, Line) and isinstance(line, Line)
                     and line.lineno - prev_line.lineno > 1):
                     for lineno in range(prev_line.lineno+1, line.lineno):
-                        new_lines.append(EmptyLine(lineno))
+                        new_lines.append(EmptyLine(line.frame_info, lineno))
                 new_lines.append(line)
             return new_lines
 
