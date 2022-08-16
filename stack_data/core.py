@@ -3,6 +3,7 @@ import html
 import os
 import sys
 from collections import defaultdict, Counter
+from enum import Enum
 from textwrap import dedent
 from types import FrameType, CodeType, TracebackType
 from typing import (
@@ -45,6 +46,11 @@ Typically this would be created from a RangeInLine by markers_from_ranges.
 Then use Line.render to insert the markers correctly.
 """
 
+
+class BlankLines(Enum):
+    HIDDEN = 1
+    VISIBLE = 2
+    LINE_NUMBER=3
 
 class Variable(
     NamedTuple('_Variable',
@@ -172,14 +178,14 @@ class Options:
             include_signature: bool = False,
             max_lines_per_piece: int = 6,
             pygments_formatter=None,
-            skip_blank = True
+            blank_lines = BlankLines.HIDDEN
     ):
         self.before = before
         self.after = after
         self.include_signature = include_signature
         self.max_lines_per_piece = max_lines_per_piece
         self.pygments_formatter = pygments_formatter
-        self.skip_blank = skip_blank
+        self.blank_lines = blank_lines
 
     def __repr__(self):
         keys = sorted(self.__dict__)
@@ -204,7 +210,7 @@ class LineGap(object):
 LINE_GAP = LineGap()
 
 
-class BlankLines:
+class BlankLineMark:
     """
     Represents one or more consecutive blank lines between executing pieces.
     """
@@ -534,10 +540,10 @@ class FrameInfo(object):
         self.code = frame.f_code
         self.options = options or Options()  # type: Options
         self.source = self.executing.source  # type: Source
-        if hasattr(self.options, "skip_blank"):
-            self.skip_blank = self.options.skip_blank
+        if hasattr(self.options, "blank_lines"):
+            self.blank_lines = self.options.blank_lines
         else:
-            self.skip_blank = True
+            self.blank_lines = BlankLines.HIDDEN
 
     def __repr__(self):
         return "{self.__class__.__name__}({self.frame})".format(self=self)
@@ -751,13 +757,13 @@ class FrameInfo(object):
         for line in real_lines:
             line.leading_indent = leading_indent
 
-        if not self.skip_blank:
+        if self.blank_lines == BlankLines.LINE_NUMBER:
             new_lines = [result[0]]
             for line in result[1:]:
                 prev_line = new_lines[-1]
                 if (isinstance(prev_line, Line) and isinstance(line, Line)
                     and line.lineno - prev_line.lineno > 1):
-                    new_lines.append(BlankLines(prev_line.lineno+1, line.lineno-1))
+                    new_lines.append(BlankLineMark(prev_line.lineno+1, line.lineno-1))
                 new_lines.append(line)
             return new_lines
 
