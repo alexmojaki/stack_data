@@ -761,14 +761,12 @@ class FrameInfo(object):
                     and pieces[1] != self.scope_pieces[1]
             ):
                 result.append(LINE_GAP)
-            elif (prev_piece and add_empty_lines and piece.start > prev_piece.stop):
-                lines = []  # type: List[Union[EmptyLine, BlankLineRange]]
+            elif prev_piece and add_empty_lines and piece.start > prev_piece.stop:
                 if self.blank_lines == BlankLines.LINE_NUMBER:
-                    lines.append(BlankLineRange(prev_piece.stop, piece.start-1))
+                    result.append(BlankLineRange(prev_piece.stop, piece.start-1))
                 else:  # BlankLines.VISIBLE
                     for lineno in range(prev_piece.stop, piece.start):
-                        lines.append(EmptyLine(self, lineno))
-                result.extend(lines)
+                        result.append(EmptyLine(self, lineno))
 
             lines = [Line(self, i) for i in piece]  # type: List[Line]
             if piece != self.executing_piece:
