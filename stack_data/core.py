@@ -212,7 +212,7 @@ LINE_GAP = LineGap()
 
 class BlankLineRange:
     """
-    Records the line number range for blank lines gaps between executing pieces.
+    Records the line number range for blank lines gaps between pieces.
     For a single blank line, begin_lineno == end_lineno.
     """
     def __init__(self, begin_lineno: int, end_lineno: int):
