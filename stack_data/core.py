@@ -50,7 +50,7 @@ Then use Line.render to insert the markers correctly.
 class BlankLines(Enum):
     HIDDEN = 1
     VISIBLE = 2
-    LINE_NUMBER=3
+    COLLAPSED=3
 
 class Variable(
     NamedTuple('_Variable',
@@ -566,10 +566,7 @@ class FrameInfo(object):
         self.code = frame.f_code
         self.options = options or Options()  # type: Options
         self.source = self.executing.source  # type: Source
-        if hasattr(self.options, "blank_lines"):
-            self.blank_lines = self.options.blank_lines
-        else:
-            self.blank_lines = BlankLines.HIDDEN
+
 
     def __repr__(self):
         return "{self.__class__.__name__}({self.frame})".format(self=self)
@@ -750,7 +747,7 @@ class FrameInfo(object):
         if not pieces:
             return []
 
-        add_empty_lines = self.blank_lines in (BlankLines.VISIBLE, BlankLines.LINE_NUMBER)
+        add_empty_lines = self.options.blank_lines in (BlankLines.VISIBLE, BlankLines.COLLAPSED)
         prev_piece = None
         result = []
         for i, piece in enumerate(pieces):
@@ -762,11 +759,11 @@ class FrameInfo(object):
             ):
                 result.append(LINE_GAP)
             elif prev_piece and add_empty_lines and piece.start > prev_piece.stop:
-                if self.blank_lines == BlankLines.LINE_NUMBER:
+                if self.options.blank_lines == BlankLines.COLLAPSED:
                     result.append(BlankLineRange(prev_piece.stop, piece.start-1))
                 else:  # BlankLines.VISIBLE
                     for lineno in range(prev_piece.stop, piece.start):
-                        result.append(EmptyLine(self, lineno))
+                        result.append(Line(self, lineno))
 
             lines = [Line(self, i) for i in piece]  # type: List[Line]
             if piece != self.executing_piece:
