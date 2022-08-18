@@ -48,9 +48,19 @@ Then use Line.render to insert the markers correctly.
 
 
 class BlankLines(Enum):
+    """The values are intended to correspond to the following behaviour:
+    HIDDEN: blank lines are not shown in the output
+    VISIBLE: blank lines are visible in the output
+    SINGLE: any consecutive blank lines are shown as a single blank line
+            in the output. This option requires the line number to be shown.
+            For a single blank line, the corresponding line number is shown.
+            Two or more consecutive blank lines are shown as a single blank
+            line in the output with a custom string shown instead of a
+            specific line number.
+    """
     HIDDEN = 1
     VISIBLE = 2
-    COLLAPSED=3
+    SINGLE=3
 
 class Variable(
     NamedTuple('_Variable',
@@ -410,28 +420,6 @@ class Line(object):
         return ''.join(parts)
 
 
-class EmptyLine(Line):
-    "An EmptyLine is a Line with no text content."
-    def __init__(
-            self,
-            frame_info: 'FrameInfo',
-            lineno: int,
-    ):
-        self.frame_info = frame_info
-        self.lineno = lineno
-        self.text = ''
-        # self.leading_indent = None  # type: Optional[int]
-
-    def render(
-            self,
-            markers: Iterable[MarkerInLine] = (),
-            *,
-            strip_leading_indent: bool = True,
-            pygmented: bool = False,
-            escape_html: bool = False
-    ) -> str:
-        return ''
-
 def markers_from_ranges(
         ranges: Iterable[RangeInLine],
         converter: Callable[[RangeInLine], Optional[Tuple[str, str]]],
@@ -728,10 +716,10 @@ class FrameInfo(object):
         return min(indents[1:])
 
     @cached_property
-    def lines(self) -> List[Union[Line, LineGap, EmptyLine, BlankLineRange]]:
+    def lines(self) -> List[Union[Line, LineGap, BlankLineRange]]:
         """
         A list of lines to display, determined by options.
-        The objects yielded either have type Line, EmptyLine, BlankLineRange
+        The objects yielded either have type Line, BlankLineRange
         or are the singleton LINE_GAP.
         Always check the type that you're dealing with when iterating.
 
@@ -747,7 +735,7 @@ class FrameInfo(object):
         if not pieces:
             return []
 
-        add_empty_lines = self.options.blank_lines in (BlankLines.VISIBLE, BlankLines.COLLAPSED)
+        add_empty_lines = self.options.blank_lines in (BlankLines.VISIBLE, BlankLines.SINGLE)
         prev_piece = None
         result = []
         for i, piece in enumerate(pieces):
@@ -759,7 +747,7 @@ class FrameInfo(object):
             ):
                 result.append(LINE_GAP)
             elif prev_piece and add_empty_lines and piece.start > prev_piece.stop:
-                if self.options.blank_lines == BlankLines.COLLAPSED:
+                if self.options.blank_lines == BlankLines.SINGLE:
                     result.append(BlankLineRange(prev_piece.stop, piece.start-1))
                 else:  # BlankLines.VISIBLE
                     for lineno in range(prev_piece.stop, piece.start):

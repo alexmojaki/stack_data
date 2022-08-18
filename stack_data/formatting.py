@@ -67,9 +67,9 @@ class Formatter:
         self.chain = chain
         self.options = options
         self.collapse_repeated_frames = collapse_repeated_frames
-        if not self.show_linenos and self.options.blank_lines == BlankLines.COLLAPSED:
+        if not self.show_linenos and self.options.blank_lines == BlankLines.SINGLE:
             raise ValueError(
-                "BlankLines.COLLAPSED option can only be used when show_linenos=True"
+                "BlankLines.SINGLE option can only be used when show_linenos=True"
             )
 
     def set_hook(self):
