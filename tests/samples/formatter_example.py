@@ -71,6 +71,7 @@ def block_right():
 def block_left():
     nb_characters = len(letter
              for letter
+
                in
              "words")
 

@@ -5,8 +5,9 @@ Traceback (most recent call last):
                                ^^^^^^^^^^
       73 |              for letter
                         ^^^^^^^^^^
-      74 |                in
+      74 | 
+      75 |                in
                         ^^^^
-      75 |              "words")
+      76 |              "words")
                         ^^^^^^^^
 TypeError: object of type 'generator' has no len()
