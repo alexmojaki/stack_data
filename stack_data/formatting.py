@@ -23,6 +23,7 @@ class Formatter:
             current_line_indicator="-->",
             line_gap_string="(...)",
             line_number_gap_string=":",
+            line_number_format_string="{:4} | ",
             show_variables=False,
             use_code_qualname=True,
             show_linenos=True,
@@ -59,6 +60,7 @@ class Formatter:
         self.current_line_indicator = current_line_indicator or ""
         self.line_gap_string = line_gap_string
         self.line_number_gap_string = line_number_gap_string
+        self.line_number_format_string = line_number_format_string
         self.show_variables = show_variables
         self.show_linenos = show_linenos
         self.use_code_qualname = use_code_qualname
@@ -177,7 +179,7 @@ class Formatter:
             result += " "
 
         if self.show_linenos:
-            result += "{:4} | ".format(line.lineno)
+            result += self.line_number_format_string.format(line.lineno)
 
         result = result or "   "
 
