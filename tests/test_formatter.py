@@ -3,7 +3,7 @@ import re
 import sys
 from contextlib import contextmanager
 
-from stack_data import Formatter, FrameInfo
+from stack_data import Formatter, FrameInfo, Options, BlankLines
 from tests.utils import compare_to_file
 
 
@@ -27,7 +27,7 @@ class MyFormatter(BaseFormatter):
 
 
 def test_example(capsys):
-    from .samples.formatter_example import bar, print_stack1, format_stack1, format_frame, f_string
+    from .samples.formatter_example import bar, print_stack1, format_stack1, format_frame, f_string, blank_lines
 
     @contextmanager
     def check_example(name):
@@ -94,3 +94,15 @@ def test_example(capsys):
             cython_example.foo()
         except Exception:
             MyFormatter().print_exception()
+
+    with check_example("blank_visible"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
+
+    with check_example("blank_single"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(options=Options(blank_lines=BlankLines.SINGLE)).print_exception()
