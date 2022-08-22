@@ -181,8 +181,6 @@ class Formatter:
         if self.show_linenos:
             result += self.line_number_format_string.format(line.lineno)
 
-        result = result or "   "
-
         prefix = result
 
         result += line.render(
@@ -208,13 +206,10 @@ class Formatter:
 
 
     def format_blank_lines_linenumbers(self, blank_line):
-        if self.current_line_indicator:
-            result = " " * len(self.current_line_indicator)
-        else:
-            result = "   "
+        result = " " * len(self.current_line_indicator) + " "
         if blank_line.begin_lineno == blank_line.end_lineno:
-            return result + " " + self.line_number_format_string.format(blank_line.begin_lineno) + "\n"
-        return result + "    {}\n".format(self.line_number_gap_string)
+            return result + self.line_number_format_string.format(blank_line.begin_lineno) + "\n"
+        return result + "   {}\n".format(self.line_number_gap_string)
 
 
     def format_variables(self, frame_info: FrameInfo) -> Iterable[str]:
