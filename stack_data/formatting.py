@@ -213,7 +213,7 @@ class Formatter:
         else:
             result = "   "
         if blank_line.begin_lineno == blank_line.end_lineno:
-            return result + " {:4} |\n".format(blank_line.begin_lineno)
+            return result + " " + self.line_number_format_string.format(blank_line.begin_lineno) + "\n"
         return result + "    {}\n".format(self.line_number_gap_string)
 
 
