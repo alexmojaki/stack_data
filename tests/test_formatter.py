@@ -3,6 +3,8 @@ import re
 import sys
 from contextlib import contextmanager
 
+import pytest
+
 from stack_data import Formatter, FrameInfo, Options, BlankLines
 from tests.utils import compare_to_file
 
@@ -111,19 +113,18 @@ def test_example(capsys):
         try:
             blank_lines()
         except Exception:
-            MyFormatter(show_linenos=False).print_exception()
+            MyFormatter(show_linenos=False, current_line_indicator="").print_exception()
 
     with check_example("blank_visible_no_linenos"):
         try:
             blank_lines()
         except Exception:
-            MyFormatter(show_linenos=False, options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
+            MyFormatter(show_linenos=False,
+                        current_line_indicator="",
+                        options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
 
 
 def test_invalid_single_option():
-    try:
+    with pytest.raises(ValueError):
         MyFormatter(show_linenos=False, options=Options(blank_lines=BlankLines.SINGLE))
-    except ValueError:
-        assert True
-    else:
-        assert False
+

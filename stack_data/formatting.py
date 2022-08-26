@@ -177,10 +177,13 @@ class Formatter:
             else:
                 result = " " * len(self.current_line_indicator)
             result += " "
+        else:
+            result = "   "
 
         if self.show_linenos:
             result += self.line_number_format_string.format(line.lineno)
 
+        result = result or "   "
         prefix = result
 
         result += line.render(
