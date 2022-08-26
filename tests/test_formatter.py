@@ -123,6 +123,25 @@ def test_example(capsys):
                         current_line_indicator="",
                         options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
 
+    with check_example("linenos_no_current_line_indicator"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(current_line_indicator="").print_exception()
+
+    with check_example("blank_visible_with_linenos_no_current_line_indicator"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(current_line_indicator="",
+                        options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
+
+    with check_example("single_option_linenos_no_current_line_indicator"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(current_line_indicator="",
+                        options=Options(blank_lines=BlankLines.SINGLE)).print_exception()
 
 def test_invalid_single_option():
     with pytest.raises(ValueError):
