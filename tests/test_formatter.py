@@ -106,3 +106,19 @@ def test_example(capsys):
             blank_lines()
         except Exception:
             MyFormatter(options=Options(blank_lines=BlankLines.SINGLE)).print_exception()
+
+
+    with check_example("blank_visible_no_linenos"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(show_linenos=False, options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
+
+
+def test_invalid_single_option():
+    try:
+        MyFormatter(show_linenos=False, options=Options(blank_lines=BlankLines.SINGLE))
+    except ValueError:
+        assert True
+    else:
+        assert False
