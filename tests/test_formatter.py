@@ -107,6 +107,11 @@ def test_example(capsys):
         except Exception:
             MyFormatter(options=Options(blank_lines=BlankLines.SINGLE)).print_exception()
 
+    with check_example("blank_invisible_no_linenos"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(show_linenos=False).print_exception()
 
     with check_example("blank_visible_no_linenos"):
         try:
