@@ -71,8 +71,19 @@ def block_right():
 def block_left():
     nb_characters = len(letter
              for letter
+
                in
              "words")
+
+
+def blank_lines():
+    a = [1, 2, 3]
+
+    length = len(a)
+
+
+    return a[length]
+
 
 
 if __name__ == '__main__':

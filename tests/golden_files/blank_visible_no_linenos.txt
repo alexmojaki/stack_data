@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+ File "formatter_example.py", line 85, in blank_lines
+   def blank_lines():
+       a = [1, 2, 3]
+   
+       length = len(a)
+   
+   
+       return a[length]
+              ^^^^^^^^^
+IndexError: list index out of range

@@ -3,7 +3,9 @@ import re
 import sys
 from contextlib import contextmanager
 
-from stack_data import Formatter, FrameInfo
+import pytest
+
+from stack_data import Formatter, FrameInfo, Options, BlankLines
 from tests.utils import compare_to_file
 
 
@@ -27,7 +29,7 @@ class MyFormatter(BaseFormatter):
 
 
 def test_example(capsys):
-    from .samples.formatter_example import bar, print_stack1, format_stack1, format_frame, f_string
+    from .samples.formatter_example import bar, print_stack1, format_stack1, format_frame, f_string, blank_lines
 
     @contextmanager
     def check_example(name):
@@ -94,3 +96,54 @@ def test_example(capsys):
             cython_example.foo()
         except Exception:
             MyFormatter().print_exception()
+
+    with check_example("blank_visible"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
+
+    with check_example("blank_single"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(options=Options(blank_lines=BlankLines.SINGLE)).print_exception()
+
+    with check_example("blank_invisible_no_linenos"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(show_linenos=False, current_line_indicator="").print_exception()
+
+    with check_example("blank_visible_no_linenos"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(show_linenos=False,
+                        current_line_indicator="",
+                        options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
+
+    with check_example("linenos_no_current_line_indicator"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(current_line_indicator="").print_exception()
+
+    with check_example("blank_visible_with_linenos_no_current_line_indicator"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(current_line_indicator="",
+                        options=Options(blank_lines=BlankLines.VISIBLE)).print_exception()
+
+    with check_example("single_option_linenos_no_current_line_indicator"):
+        try:
+            blank_lines()
+        except Exception:
+            MyFormatter(current_line_indicator="",
+                        options=Options(blank_lines=BlankLines.SINGLE)).print_exception()
+
+def test_invalid_single_option():
+    with pytest.raises(ValueError):
+        MyFormatter(show_linenos=False, options=Options(blank_lines=BlankLines.SINGLE))
+
