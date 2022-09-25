@@ -467,7 +467,7 @@ def test_skipping_frames():
 
 
 def sys_modules_sources():
-    for module in sys.modules.values():
+    for module in list(sys.modules.values()):
         try:
             filename = inspect.getsourcefile(module)
         except TypeError:
