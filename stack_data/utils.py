@@ -8,6 +8,8 @@ from typing import (
     TypeVar, Mapping,
 )
 
+from asttokens import ASTTokens
+
 T = TypeVar('T')
 R = TypeVar('R')
 
@@ -24,22 +26,14 @@ def unique_in_order(it: Iterable[T]) -> List[T]:
     return list(OrderedDict.fromkeys(it))
 
 
-def line_range(node: ast.AST) -> Tuple[int, int]:
+def line_range(atok: ASTTokens, node: ast.AST) -> Tuple[int, int]:
     """
     Returns a pair of numbers representing a half open range
     (i.e. suitable as arguments to the `range()` builtin)
     of line numbers of the given AST nodes.
     """
-    try:
-        return (
-            node.first_token.start[0],
-            node.last_token.end[0] + 1,
-        )
-    except AttributeError:
-        return (
-            node.lineno,
-            getattr(node, "end_lineno", node.lineno) + 1,
-        )
+    start, end = atok.get_text_positions(node, padded=False)
+    return start[0], end[0] + 1
 
 
 def highlight_unique(lst: List[T]) -> Iterator[Tuple[T, bool]]:

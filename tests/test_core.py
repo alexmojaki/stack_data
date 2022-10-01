@@ -501,7 +501,7 @@ def check_pieces(source):
     assert pieces == sorted(pieces, key=lambda p: (p.start, p.stop))
 
     stmts = sorted({
-        line_range(node)
+        source.line_range(node)
         for node in ast.walk(source.tree)
         if isinstance(node, ast.stmt)
         if not isinstance(getattr(node, 'body', None), list)
