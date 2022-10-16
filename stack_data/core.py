@@ -91,9 +91,6 @@ class Source(executing.Source):
     Don't construct this class. Get an instance from frame_info.source.
     """
 
-    def asttokens(self, init_tokens=False):
-        return super().asttokens(init_tokens=init_tokens)
-
     @cached_property
     def pieces(self) -> List[range]:
         if not self.tree:
@@ -108,7 +105,7 @@ class Source(executing.Source):
         if not self.tree:
             raise AttributeError("This file doesn't contain valid Python, so .tokens_by_lineno doesn't exist")
         return group_by_key_func(
-            self.asttokens(init_tokens=True).tokens,
+            self.asttokens().tokens,
             lambda tok: tok.start[0],
         )
 
@@ -164,7 +161,7 @@ class Source(executing.Source):
         yield start, end
 
     def line_range(self, node: ast.AST) -> Tuple[int, int]:
-        return line_range(self.asttokens(), node)
+        return line_range(self.asttext(), node)
 
 
 class Options:
@@ -341,8 +338,8 @@ class Line(object):
         with the correct start and end and the given data.
         Otherwise, return None.
         """
-        atok = self.frame_info.source.asttokens()
-        (start, range_start), (end, range_end) = atok.get_text_positions(node, padded=False)
+        atext = self.frame_info.source.asttext()
+        (start, range_start), (end, range_end) = atext.get_text_positions(node, padded=False)
 
         if not (start <= self.lineno <= end):
             return None
@@ -798,18 +795,18 @@ class FrameInfo(object):
         if isinstance(formatter, HtmlFormatter):
             formatter.nowrap = True
 
-        atok = self.source.asttokens()
+        atext = self.source.asttext()
         node = self.executing.node
         if node and getattr(formatter.style, "for_executing_node", False):
-            scope_start = atok.get_text_range(scope)[0]
-            start, end = atok.get_text_range(node)
+            scope_start = atext.get_text_range(scope)[0]
+            start, end = atext.get_text_range(node)
             start -= scope_start
             end -= scope_start
             ranges = [(start, end)]
         else:
             ranges = []
 
-        code = atok.get_text(scope)
+        code = atext.get_text(scope)
         lines = _pygmented_with_ranges(formatter, code, ranges)
 
         start_line = self.source.line_range(scope)[0]
@@ -850,7 +847,7 @@ class FrameInfo(object):
             if isinstance(n, ast.arg):
                 return n.arg
             else:
-                return self.source.asttokens().get_text(n)
+                return self.source.asttext().get_text(n)
 
         def normalise_node(n):
             try:

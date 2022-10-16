@@ -8,7 +8,7 @@ from typing import (
     TypeVar, Mapping,
 )
 
-from asttokens import ASTTokens
+from asttokens import ASTText
 
 T = TypeVar('T')
 R = TypeVar('R')
@@ -26,7 +26,7 @@ def unique_in_order(it: Iterable[T]) -> List[T]:
     return list(OrderedDict.fromkeys(it))
 
 
-def line_range(atok: ASTTokens, node: ast.AST) -> Tuple[int, int]:
+def line_range(atok: ASTText, node: ast.AST) -> Tuple[int, int]:
     """
     Returns a pair of numbers representing a half open range
     (i.e. suitable as arguments to the `range()` builtin)
