@@ -32,8 +32,13 @@ def line_range(atok: ASTText, node: ast.AST) -> Tuple[int, int]:
     (i.e. suitable as arguments to the `range()` builtin)
     of line numbers of the given AST nodes.
     """
-    start, end = atok.get_text_positions(node, padded=False)
-    return start[0], end[0] + 1
+    if isinstance(node, getattr(ast, "match_case", ())):
+        start, _end = line_range(atok, node.pattern)
+        _start, end = line_range(atok, node.body[-1])
+        return start, end
+    else:
+        (start, _), (end, _) = atok.get_text_positions(node, padded=False)
+        return start, end + 1
 
 
 def highlight_unique(lst: List[T]) -> Iterator[Tuple[T, bool]]:
