@@ -69,7 +69,15 @@ def test_example(capsys):
         formatted = format_frame(formatter)
         formatter.print_lines(formatted)
 
-    with check_example(f"f_string_{'old' if sys.version_info[:2] < (3, 8) else 'new'}"):
+    if sys.version_info[:2] < (3, 8):
+        f_string_suffix = 'old'
+    elif sys.version_info[:2] == (3, 8):
+        # lineno/col_offset in f-strings cannot be trusted in 3.8
+        f_string_suffix = '3.8'
+    else:
+        f_string_suffix = 'new'
+
+    with check_example(f"f_string_{f_string_suffix}"):
         try:
             f_string()
         except Exception:
