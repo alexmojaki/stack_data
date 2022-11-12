@@ -4,6 +4,7 @@ import sys
 from contextlib import contextmanager
 
 import pytest
+import pygments
 
 from stack_data import Formatter, FrameInfo, Options, BlankLines
 from tests.utils import compare_to_file
@@ -55,6 +56,16 @@ def test_example(capsys):
             bar()
         except Exception:
             sys.excepthook(*sys.exc_info())
+
+    with check_example("pygmented_error"):
+        h = pygments.highlight
+        pygments.highlight = lambda *args, **kwargs: 1/0
+        try:
+            bar()
+        except Exception:
+            MyFormatter(pygmented=True).print_exception()
+        finally:
+            pygments.highlight = h
 
     with check_example("print_stack"):
         print_stack1(MyFormatter())
