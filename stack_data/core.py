@@ -124,6 +124,7 @@ class Source(executing.Source):
         for (start, end) in pieces[1:]:
             (last_start, last_end) = new_pieces[-1]
             if start < last_end:
+                assert start == last_end - 1
                 assert ';' in self.lines[start - 1]
                 new_pieces[-1] = (last_start, end)
             else:
