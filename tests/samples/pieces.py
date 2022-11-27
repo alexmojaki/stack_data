@@ -79,3 +79,19 @@ class Foo(object):
     @property
     def foo(self):
         return 3
+
+
+# noinspection PyTrailingSemicolon
+def semicolons():
+    if 1:
+        print(1,
+         2); print(3,
+              4); print(5,
+                   6)
+        if 2:
+            print(1,
+             2); print(3, 4); print(5,
+                       6)
+            print(1, 2); print(3,
+                  4); print(5, 6)
+            print(1, 2);print(3, 4);print(5, 6)
