@@ -3,8 +3,9 @@ import re
 import sys
 from contextlib import contextmanager
 
-import pytest
 import pygments
+import pytest
+from asttokens.util import fstring_positions_work
 
 from stack_data import Formatter, FrameInfo, Options, BlankLines
 from tests.utils import compare_to_file
@@ -82,8 +83,7 @@ def test_example(capsys):
 
     if sys.version_info[:2] < (3, 8):
         f_string_suffix = 'old'
-    elif sys.version_info[:2] == (3, 8):
-        # lineno/col_offset in f-strings cannot be trusted in 3.8
+    elif not fstring_positions_work():
         f_string_suffix = '3.8'
     else:
         f_string_suffix = 'new'

@@ -39,4 +39,4 @@ def test_example():
         )
 
 
-    compare_to_file_json(result, "serialize")
+    compare_to_file_json(result, "serialize", pygmented=True)
