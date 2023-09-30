@@ -1,7 +1,7 @@
 import os
 
 import pyximport
-from typeguard.importhook import install_import_hook
+from typeguard import install_import_hook
 
 pyximport.install(language_level=3)
 
