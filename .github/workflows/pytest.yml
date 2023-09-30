@@ -1,5 +1,12 @@
 name: Tests
-on: [push, pull_request]
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-20.04
